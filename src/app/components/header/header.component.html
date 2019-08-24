@@ -1,0 +1,21 @@
+<ion-header>
+    <ion-toolbar color="light" mode="md">
+        <!-- <ion-buttons slot="start">
+            <ion-back-button defaultHref="/" text="Inicio"></ion-back-button>
+        </ion-buttons> -->
+        <ion-buttons slot="start">
+            <ion-icon name="play-circle" slot="icon-only"></ion-icon>
+            <!-- <ion-menu-button color="light" menu="mainMenu"></ion-menu-button> -->
+            <!-- <app-menu></app-menu> -->
+        </ion-buttons>
+
+        <ion-buttons slot="end">
+            <ion-button (click)="onClick()">
+                <ion-avatar>
+                    <img src="/assets/images/no-avatar.svg" class="avatar-img">
+                </ion-avatar>
+            </ion-button>
+        </ion-buttons>
+        <ion-title>{{title}}</ion-title>
+    </ion-toolbar>
+</ion-header>

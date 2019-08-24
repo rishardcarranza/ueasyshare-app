@@ -1,10 +1,44 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>
-      Servidores
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-header [title]="title"></app-header>
 
 <ion-content>
+    <ion-list-header>Servidor Actual</ion-list-header>
+    <ion-list>
+        <ion-item>
+            <ion-avatar>
+                <ion-icon name="desktop" size="large"></ion-icon>
+            </ion-avatar>
+            <ion-label>
+                <h3>Raspberry Pi-USO Edificio C</h3>
+                <p>IP: 192.168.1.4:<span>8000</span></p>
+            </ion-label>
+        </ion-item>
+    </ion-list>
+
+    <ion-list-header>Servidores Disponibles</ion-list-header>
+    <ion-list>
+        <ion-item>
+            <ion-avatar>
+                <ion-icon name="desktop" size="large"></ion-icon>
+            </ion-avatar>
+            <ion-label>
+                <h3>Buscando servidor ... </h3>
+                <p><span></span></p>
+            </ion-label>
+        </ion-item>
+        <!-- <ion-item>
+            <ion-avatar>
+                <ion-icon name="add" size="large"></ion-icon>
+            </ion-avatar>
+            <ion-label>
+                <h3>Agregar servidor manualmente</h3>
+                <p><span></span></p>
+            </ion-label>
+        </ion-item> -->
+    </ion-list>
+    <ion-button expand="block"
+                color="tertiary">
+        <ion-icon slot="start" 
+                  name="add-circle"></ion-icon>
+        Agregar servidor manualmente
+    </ion-button>
 </ion-content>

@@ -1,0 +1,17 @@
+[
+    {
+        "icon": "american-football",
+        "name": "Iniciar Sesión",
+        "redirectTo": "/"
+    },
+    {
+        "icon": "appstore",
+        "name": "Configuraciones",
+        "redirectTo": "/"
+    },
+    {
+        "icon": "beaker",
+        "name": "Cerrar Sesión",
+        "redirectTo": "/"
+    }
+]
