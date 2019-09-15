@@ -1,5 +1,7 @@
 {
   "name": "ueasyshare-app",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }

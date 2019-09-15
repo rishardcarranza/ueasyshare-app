@@ -12,4 +12,6 @@ export class LocalService {
     getMenuOptions() {
         return this.http.get<Menu[]>('/assets/data/main-menu.json');
     }
+
+    
 }

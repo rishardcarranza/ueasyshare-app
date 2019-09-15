@@ -8,6 +8,16 @@ const routes: Routes = [
     component: TabsPage,
     children: [
       {
+        path: 'user',
+        children: [
+          {
+            path: '',
+            loadChildren: () =>
+              import('../user/user.module').then(m => m.UserPageModule)
+          }
+        ]
+      },
+      {
         path: 'tab1',
         children: [
           {
@@ -39,14 +49,14 @@ const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/tabs/user',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: '/tabs/user',
     pathMatch: 'full'
   }
 ];
