@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
+import { IonicStorageModule } from '@ionic/storage';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
@@ -30,7 +31,8 @@ const config: SocketIoConfig = {
       ComponentsModule,
       IonicModule.forRoot(),
       AppRoutingModule,
-      SocketIoModule.forRoot(config)
+      SocketIoModule.forRoot(config),
+      IonicStorageModule.forRoot()
     ],
   providers: [
     StatusBar,
