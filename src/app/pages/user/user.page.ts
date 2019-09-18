@@ -23,26 +23,31 @@ export class UserPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.loadUserInfo();
+  }
+
+  loadUserInfo() {
     this.localService.getUserInfo()
-        .then((response) => {
-            console.log(response);
-            if (response.token && response.user) {
-                this.userAuth = response.user;
-                this.token = response.token;
-            } else {
-                this.userAuth = null;
-                this.token = '';
-            }
-        }).
-        catch((error) => {
-            this.localService.presentToast(`Error: ${error}`);
+    .then((response) => {
+
+        if (response.token && response.user) {
+            this.userAuth = response.user;
+            this.token = response.token;
+        } else {
             this.userAuth = null;
             this.token = '';
-        });
+        }
+
+    }).
+    catch((error) => {
+        this.localService.presentToast(`Error: ${error}`);
+        this.userAuth = null;
+        this.token = '';
+    });
   }
 
   onLogin() {
-    console.log('On Login');
+
     this.mainService.loginUser(this.user.username, this.user.password)
         .then((resp) => {
             // tslint:disable-next-line: no-string-literal

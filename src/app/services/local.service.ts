@@ -22,6 +22,11 @@ export class LocalService {
         this.storage.set('token', token);
     }
 
+    deleteUser() {
+        this.storage.remove('user');
+        this.storage.remove('token');
+    }
+
     async getUserInfo() {
         let token = '';
         await this.storage.get('token').then(resp => token = resp);

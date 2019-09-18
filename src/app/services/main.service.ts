@@ -30,8 +30,6 @@ export class MainService {
         password: pass
     };
 
-    console.log(params);
-
     const httpOptions = {
         headers: new HttpHeaders({
             'Content-Type':  'application/json'
@@ -39,5 +37,17 @@ export class MainService {
     };
 
     return this.http.post('http://localhost:8000/api/v1/rest-auth/login/', params, httpOptions).toPromise();
+  }
+
+  logoutUser(token: string) {
+
+    const httpOptions = {
+        headers: new HttpHeaders({
+            'Content-Type':  'application/json',
+            Authorization: `Token ${token}`
+        })
+    };
+
+    return this.http.post('http://localhost:8000/api/v1/rest-auth/logout/', {}, httpOptions).toPromise();
   }
 }

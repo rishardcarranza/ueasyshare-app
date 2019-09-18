@@ -34,6 +34,6 @@
         </ion-row>
     </ion-grid>
 
-    <app-profile *ngIf="token !== ''"></app-profile>
+    <app-profile *ngIf="token !== ''" [user]="userAuth" [token]="token"></app-profile>
     
 </ion-content>
