@@ -7,13 +7,16 @@ import { ToastController } from '@ionic/angular';
 @Injectable({
   providedIn: 'root'
 })
+
 export class LocalService {
     userResponse: any = null;
 
-  constructor(
-      private http: HttpClient,
-      private toastCtrl: ToastController,
-      private storage: Storage
+    private data = [];
+
+    constructor(
+        private http: HttpClient,
+        private toastCtrl: ToastController,
+        private storage: Storage
     ) { }
 
 
@@ -55,5 +58,12 @@ export class LocalService {
         toast.present();
     }
 
+    setData(id, data) {
+        this.data[id] = data;
+    }
+
+    getData(id) {
+        return this.data[id];
+    }
 
 }

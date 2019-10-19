@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { TabsPage } from './tabs.page';
+import { DataResolverService } from '../../resolver/data-resolver.service';
 
 const routes: Routes = [
   {
@@ -14,6 +15,14 @@ const routes: Routes = [
             path: '',
             loadChildren: () =>
               import('../user/user.module').then(m => m.UserPageModule)
+          },
+          {
+            path: 'detail/:id',
+            resolve: {
+                user: DataResolverService
+            },
+            loadChildren: () =>
+              import('../userdetail/userdetail.module').then(m => m.UserdetailPageModule)
           }
         ]
       },

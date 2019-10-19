@@ -13,7 +13,7 @@
                         <ion-input  type="text" 
                                     name="username"
                                     clear-input="true"
-                                    [(ngModel)]="user.username"
+                                    [(ngModel)]="username"
                                     placeholder="Nombre de usuario"></ion-input>
                     </ion-item>
     
@@ -21,7 +21,7 @@
                         <ion-input  type="password"
                                     name="password"
                                     clear-input="true"
-                                    [(ngModel)]="user.password"
+                                    [(ngModel)]="password"
                                     placeholder="Contraseña"></ion-input>
                     </ion-item>
                 </div>
@@ -32,8 +32,5 @@
                 </div>
             </ion-col>
         </ion-row>
-    </ion-grid>
-
-    <app-profile *ngIf="token !== ''" [user]="userAuth" [token]="token"></app-profile>
-    
+    </ion-grid>    
 </ion-content>

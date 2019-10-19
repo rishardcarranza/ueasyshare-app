@@ -1,0 +1,43 @@
+<app-header></app-header>
+
+<ion-content>
+    <ion-grid>
+        <ion-row color="primary">
+            <ion-col class="center" size="12">
+                <br>
+                <ion-avatar class="center">
+                    <img src="https://gravatar.com/avatar/dba6bae8c566f9d4041fb9cd9ada7741?d=identicon&f=y">
+                </ion-avatar>
+                <br>
+                <h3 class="center">{{user?.first_name}} {{user?.last_name}}</h3>
+                <p class="center">
+                    {{user?.username}} <br>
+                    <em class="center">{{user?.email}}</em>
+                </p>
+            </ion-col>
+        </ion-row>
+        <ion-list #lista>    
+            <ion-list-header>
+                <h5>Configuraciones</h5>
+            </ion-list-header>
+            <ion-item routerLink="/" detail>
+                <ion-icon name="contact" slot="start"></ion-icon>
+                <ion-label>
+                    <h2>Perfil de usuario</h2>
+                </ion-label>
+            </ion-item>
+            <ion-item routerLink="/" detail>
+                <ion-icon name="information-circle" slot="start"></ion-icon>
+                <ion-label>
+                    <h2>Acerca de</h2>
+                </ion-label>
+            </ion-item>
+            <ion-item routerLink="" detail (click)="logoutUser()">
+                    <ion-icon name="log-out" slot="start"></ion-icon>
+                <ion-label>
+                    <h2>Cerrar sesión</h2>
+                </ion-label>
+            </ion-item>
+        </ion-list>
+    </ion-grid>
+</ion-content>

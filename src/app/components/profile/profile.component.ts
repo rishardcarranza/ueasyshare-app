@@ -26,19 +26,5 @@ export class ProfileComponent implements OnInit {
 
   logoutUser() {
     console.log('logout');
-
-    this.mainService.logoutUser(this.token)
-        .then((resp) => {
-            this.localService.deleteUser();
-            this.router.navigateByUrl('/tabs/user');
-        })
-        .catch((err) => {
-            console.log(err.status);
-            if (err.status === 400) {
-                this.localService.presentToast('Error al cerrar la sesión');
-                this.user = null;
-                this.token = '';
-            }
-        });
   }
 }
