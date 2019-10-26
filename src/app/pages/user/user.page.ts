@@ -3,6 +3,9 @@ import { User } from '../../interfaces/interfaces';
 import { MainService } from '../../services/main.service';
 import { LocalService } from '../../services/local.service';
 import { Router } from '@angular/router';
+import { WebsocketService } from '../../services/websocket.service';
+import { NotificationsService } from '../../services/notifications.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-user',
@@ -13,6 +16,7 @@ export class UserPage implements OnInit {
 
     username = '';
     password = '';
+    webSocket: WebsocketService;
 
     userAuth: User;
     token = '';
@@ -20,32 +24,50 @@ export class UserPage implements OnInit {
   constructor(
     private mainService: MainService,
     private localService: LocalService,
-    private router: Router
+    private router: Router,
+    private notifications: NotificationsService
   ) {
-    console.log('user constructor');
+    if (environment.debug) {
+        console.log('UserPage constructor', WebsocketService.SOCKET_STATUS);
+    }
+
+    if (WebsocketService.SOCKET_STATUS) {
+        this.webSocket = WebsocketService.getInstance();
+    }
   }
 
   ionViewWillEnter() {
-    this.localService.getUserInfo()
-        .then((response) => {
+    if (environment.debug) {
+        console.log('socket status', WebsocketService.SOCKET_STATUS);
+    }
 
-            if (response.token && response.user) {
-                this.userAuth = response.user;
-                this.token = response.token;
-                this.router.navigateByUrl(`/tabs/user/detail/${this.userAuth.id}`);
-            } else {
+    if (WebsocketService.SOCKET_STATUS) {
+        this.localService.getUserInfo()
+            .then((response) => {
+
+                if (response.token && response.user) {
+                    this.userAuth = response.user;
+                    this.token = response.token;
+                    this.router.navigateByUrl('/tabs/user/detail');
+                } else {
+                    this.username = '';
+                    this.password = '';
+                    this.token = '';
+                    this.router.navigateByUrl('/tabs/user');
+                }
+            }).
+            catch((error) => {
+                this.notifications.presentToast(`Error: ${error}`);
+                // this.notifications.alertDisconnected();
                 this.username = '';
                 this.password = '';
                 this.token = '';
-                this.router.navigateByUrl(`/tabs/user`);
-            }
-        }).
-        catch((error) => {
-            this.localService.presentToast(`Error: ${error}`);
-            this.username = '';
-            this.password = '';
-            this.token = '';
-        });
+            });
+    } else {
+        // Lanzar Toast
+        this.notifications.alertDisconnected();
+    }
+
   }
 
   ngOnInit() { }
@@ -54,22 +76,24 @@ export class UserPage implements OnInit {
 
     this.mainService.loginUser(this.username, this.password)
         .then((resp) => {
+            // console.log(resp);
             // tslint:disable-next-line: no-string-literal
             this.userAuth = resp['user'];
             // tslint:disable-next-line: no-string-literal
             this.token = resp['key'];
             this.localService.saveUser(this.userAuth, this.token);
-
-            this.localService.setData(this.userAuth.id, this.userAuth);
-            this.router.navigateByUrl(`/tabs/user/detail/${this.userAuth.id}`);
-            // .router.navigateByUrl('/tabs/user/detail');
+            this.localService.isAuthenticated = true;
+            this.webSocket.emitirUsuariosActivos();
+            // this.router.navigateByUrl(`/tabs/user/detail/${this.userAuth.id}`);
+            this.router.navigateByUrl('/tabs/user/detail');
         })
         .catch((err) => {
             console.log(err.status);
             if (err.status === 400) {
-                this.localService.presentToast('Usuario o contraseña incorrectos');
+                this.notifications.alertMessage('Error', '', 'Usuario o contraseña incorrectos');
                 this.userAuth = null;
                 this.token = '';
+                this.localService.isAuthenticated = false;
             }
         });
   }

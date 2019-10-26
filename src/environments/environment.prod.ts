@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  wsURL: 'http://192.168.1.4:5000'
+  api_port: '8000',
+  socket_port: '5000',
+  debug: false
 };

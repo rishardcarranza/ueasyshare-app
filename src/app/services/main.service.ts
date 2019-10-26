@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { WebsocketService } from './websocket.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({
@@ -7,22 +6,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 })
 export class MainService {
 
-  constructor(
-        public wsService: WebsocketService,
-        private http: HttpClient) { }
-
-  emitServerInfo() {
-    return this.wsService.emit('get-server');
-  }
-
-  getServerInfo() {
-    return this.wsService.listen('server-info');
-  }
-
-  emitirUsuariosActivos() {
-    console.log('Emitir obtener usuarios');
-    return this.wsService.emit('obtener-usuarios');
-  }
+  constructor( private http: HttpClient) { }
 
   loginUser(user: string, pass: string) {
     const params = {
@@ -36,7 +20,7 @@ export class MainService {
         })
     };
 
-    return this.http.post('http://localhost:8000/api/v1/rest-auth/login/', params, httpOptions).toPromise();
+    return this.http.post('http://192.168.1.4:8000/api/v1/rest-auth/login/', params, httpOptions).toPromise();
   }
 
   logoutUser(token: string) {
@@ -48,6 +32,6 @@ export class MainService {
         })
     };
 
-    return this.http.post('http://localhost:8000/api/v1/rest-auth/logout/', {}, httpOptions).toPromise();
+    return this.http.post('http://192.168.1.4:8000/api/v1/rest-auth/logout/', {}, httpOptions).toPromise();
   }
 }

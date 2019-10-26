@@ -16,9 +16,16 @@ import { ComponentsModule } from './components/components.module';
 // Sockets
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { environment } from '../environments/environment';
+import { UserGuard } from './guards/user-guard.service';
+
+// Native
+import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
+
+import { WebsocketService } from './services/websocket.service';
+
 
 const config: SocketIoConfig = {
-  url: environment.wsURL,
+  url: '',
   options: {}
 };
 
@@ -31,12 +38,15 @@ const config: SocketIoConfig = {
       ComponentsModule,
       IonicModule.forRoot(),
       AppRoutingModule,
-      SocketIoModule.forRoot(config),
+      // SocketIoModule.forRoot(config),
       IonicStorageModule.forRoot()
     ],
   providers: [
     StatusBar,
     SplashScreen,
+    UserGuard,
+    BarcodeScanner,
+    WebsocketService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

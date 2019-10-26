@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { TabsPage } from './tabs.page';
-import { DataResolverService } from '../../resolver/data-resolver.service';
+import { UserGuard } from '../../guards/user-guard.service';
 
 const routes: Routes = [
   {
@@ -17,12 +17,9 @@ const routes: Routes = [
               import('../user/user.module').then(m => m.UserPageModule)
           },
           {
-            path: 'detail/:id',
-            resolve: {
-                user: DataResolverService
-            },
-            loadChildren: () =>
-              import('../userdetail/userdetail.module').then(m => m.UserdetailPageModule)
+            path: 'detail',
+            loadChildren: () => import('../userdetail/userdetail.module').then(m => m.UserdetailPageModule),
+            canActivate: [ UserGuard ],
           }
         ]
       },
@@ -58,14 +55,14 @@ const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: '/tabs/user',
+        redirectTo: '/tabs/user/detail',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: '/tabs/user',
+    redirectTo: '/tabs/tab1',
     pathMatch: 'full'
   }
 ];
