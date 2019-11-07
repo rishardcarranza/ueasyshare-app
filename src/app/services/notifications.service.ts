@@ -25,22 +25,23 @@ export class NotificationsService {
     async alertDisconnected() {
         const alert = await this.alertCtrl.create({
             header: 'Servidor Desconectado',
-            message: 'Primero debes conectarte al servidor de <strong>uEasyShare</strong> escaneando el código QR desde la app.',
+            message: 'Primero debes conectarte al servidor de <strong>uEasyShare</strong> escaneando el código QR en la opción Conectar.',
             buttons: [
-            {
-                text: 'Cancelar',
-                role: 'cancel',
-                cssClass: 'danger',
-                handler: (blah) => {
-                    console.log('Confirm Cancel: blah');
+            // {
+            //     text: 'Cancelar',
+            //     role: 'cancel',
+            //     cssClass: '',
+            //     handler: (blah) => {
+            //         // console.log('Confirm Cancel: blah');
+            //     }
+            // },
+                {
+                    text: 'Ir a Conectar',
+                    cssClass: 'primary',
+                    handler: () => {
+                        this.router.navigateByUrl('/tabs/tab1');
+                    }
                 }
-            }, {
-                text: 'Continuar',
-                cssClass: 'primary',
-                handler: () => {
-                    this.router.navigateByUrl('/tabs/tab1');
-                }
-            }
             ]
         });
 

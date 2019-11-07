@@ -13,18 +13,18 @@ export class UserGuard implements CanActivate {
   ) { }
 
   canActivate(): boolean {
-    this.localService.getUserInfo()
-        .then((response) => {
-            console.log('Guard', response);
-            if (response.token && response.user) {
-                return true;
-            } else {
-                this.router.navigateByUrl('/tabs/user');
-                return false;
-            }
+    // this.localService.getUserInfo()
+    //     .then((response) => {
+    //         console.log('Guard', response);
+    //         if (response.token && response.user) {
+    //             return true;
+    //         } else {
+    //             this.router.navigateByUrl('/tabs/user');
+    //             return false;
+    //         }
 
-        });
-    console.log('Final false');
+    //     });
+    // console.log('Final false');
     return true;
     // let result = false;
     // console.log('UserGuard', this.localService.isAuthenticated);

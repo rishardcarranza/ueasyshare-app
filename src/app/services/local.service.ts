@@ -19,22 +19,22 @@ export class LocalService {
     ) { }
 
 
-    saveUser(user: User, token: string) {
-        this.storage.set('user', user);
-        this.storage.set('token', token);
-        this.isAuthenticated = false;
+    async saveUser(user: User, token: string) {
+        await this.storage.set('user', user);
+        await this.storage.set('token', token);
+        this.isAuthenticated = true;
     }
 
     deleteUser() {
         this.storage.remove('user');
         this.storage.remove('token');
-        this.isAuthenticated = true;
+        this.isAuthenticated = false;
     }
 
     async getUserInfo() {
         let token = '';
         await this.storage.get('token').then(resp => token = resp);
-
+        // console.log('getUserInfo: ', token);
         if (token !== '') {
             let user: User;
             await this.storage.get('user').then(resp => user = resp);
@@ -49,6 +49,10 @@ export class LocalService {
 
     setStorage(key: string, value: any) {
         this.storage.set(key, value);
+    }
+
+    getStorage(key: string) {
+        return this.storage.get(key);
     }
 
     removeStorage(key: string) {

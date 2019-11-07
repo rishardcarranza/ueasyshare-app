@@ -1,12 +1,27 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { LocalService } from './local.service';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MainService {
 
-  constructor( private http: HttpClient) { }
+    localIp = '';
+    serverURL = '';
+
+  constructor(
+    private http: HttpClient,
+    private localService: LocalService
+    ) {
+        this.localService.getStorage('SERVER_IP')
+        .then(ip => {
+            this.localIp = ip;
+            this.localIp = '192.168.1.4';
+            this.serverURL = `http://${this.localIp}:${environment.api_port}`;
+        });
+    }
 
   loginUser(user: string, pass: string) {
     const params = {
@@ -20,7 +35,7 @@ export class MainService {
         })
     };
 
-    return this.http.post('http://192.168.1.4:8000/api/v1/rest-auth/login/', params, httpOptions).toPromise();
+    return this.http.post(`${this.serverURL}/api/v1/rest-auth/login/`, params, httpOptions).toPromise();
   }
 
   logoutUser(token: string) {
@@ -32,6 +47,6 @@ export class MainService {
         })
     };
 
-    return this.http.post('http://192.168.1.4:8000/api/v1/rest-auth/logout/', {}, httpOptions).toPromise();
+    return this.http.post(`${this.serverURL}/api/v1/rest-auth/logout/`, {}, httpOptions).toPromise();
   }
 }

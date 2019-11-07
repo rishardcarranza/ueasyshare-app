@@ -17,6 +17,7 @@ export class UserPage implements OnInit {
     username = '';
     password = '';
     webSocket: WebsocketService;
+    localIp = '';
 
     userAuth: User;
     token = '';
@@ -26,66 +27,66 @@ export class UserPage implements OnInit {
     private localService: LocalService,
     private router: Router,
     private notifications: NotificationsService
-  ) {
-    if (environment.debug) {
-        console.log('UserPage constructor', WebsocketService.SOCKET_STATUS);
-    }
-
-    if (WebsocketService.SOCKET_STATUS) {
-        this.webSocket = WebsocketService.getInstance();
-    }
-  }
+  ) {  }
 
   ionViewWillEnter() {
-    if (environment.debug) {
-        console.log('socket status', WebsocketService.SOCKET_STATUS);
-    }
+    // Check the LOCAL IP
+    this.localService.getStorage('SERVER_IP')
+    .then(ip => {
+        console.log('SERVER_IP', ip);
+        this.localIp = ip;
+        this.localIp = '192.168.1.4';
+        if (ip && this.localIp !== '') {
+        // this.connectToWS();
+            this.webSocket = WebsocketService.getInstance(WebsocketService.URL);
 
-    if (WebsocketService.SOCKET_STATUS) {
-        this.localService.getUserInfo()
-            .then((response) => {
-
-                if (response.token && response.user) {
-                    this.userAuth = response.user;
-                    this.token = response.token;
-                    this.router.navigateByUrl('/tabs/user/detail');
-                } else {
+            if (WebsocketService.SOCKET_STATUS) {
+                this.localService.getUserInfo()
+                .then((response) => {
+                    if (response.token && response.user) {
+                        this.userAuth = response.user;
+                        this.token = response.token;
+                        this.router.navigateByUrl('/tabs/user/detail');
+                    } else {
+                        this.username = '';
+                        this.password = '';
+                        this.token = '';
+                        this.router.navigateByUrl('/tabs/user');
+                    }
+                }).
+                catch((error) => {
+                    this.notifications.presentToast(`Error: ${error}`);
+                    // this.notifications.alertDisconnected();
                     this.username = '';
                     this.password = '';
                     this.token = '';
-                    this.router.navigateByUrl('/tabs/user');
-                }
-            }).
-            catch((error) => {
-                this.notifications.presentToast(`Error: ${error}`);
-                // this.notifications.alertDisconnected();
-                this.username = '';
-                this.password = '';
-                this.token = '';
-            });
-    } else {
-        // Lanzar Toast
-        this.notifications.alertDisconnected();
-    }
-
+                });
+            } else {
+                // Lanzar Toast
+                this.notifications.alertDisconnected();
+            }
+        } else {
+            // Lanzar Toast
+            this.notifications.alertDisconnected();
+        }
+    });
   }
 
   ngOnInit() { }
 
   onLogin() {
-
     this.mainService.loginUser(this.username, this.password)
         .then((resp) => {
-            // console.log(resp);
+            console.log('on login: ', resp);
             // tslint:disable-next-line: no-string-literal
             this.userAuth = resp['user'];
             // tslint:disable-next-line: no-string-literal
             this.token = resp['key'];
-            this.localService.saveUser(this.userAuth, this.token);
-            this.localService.isAuthenticated = true;
-            this.webSocket.emitirUsuariosActivos();
-            // this.router.navigateByUrl(`/tabs/user/detail/${this.userAuth.id}`);
-            this.router.navigateByUrl('/tabs/user/detail');
+            this.localService.saveUser(this.userAuth, this.token)
+            .then(() => {
+                this.webSocket.emitirUsuariosActivos();
+                this.router.navigateByUrl('/tabs/user/detail');
+            });
         })
         .catch((err) => {
             console.log(err.status);

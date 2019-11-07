@@ -2,7 +2,7 @@
 
 <ion-content>
     <ion-grid>
-        <ion-row>
+        <ion-row class="rowQR">
             <ion-col size="12">
                 <ion-slides [options]="swiperOpts">
                     <ion-slide>
@@ -21,20 +21,18 @@
         </ion-row>
         <ion-row>
             <ion-col size="12" class="text-center">
-                <ion-text [color]="serverInfo.color">
+                <ion-chip [color]="serverInfo.color">
                     <ion-icon [name]="serverInfo.icon" size="large"></ion-icon>
-                </ion-text>
+                    <ion-label>{{serverInfo.text}}</ion-label>
+                </ion-chip>
             </ion-col>
         </ion-row>
         <ion-row>
             <ion-col size="12" class="text-center">
-                <ion-text [color]="serverInfo.color">{{serverInfo.text}}</ion-text>
+                <ion-note [color]="serverInfo.color">{{serverInfo.ip}}</ion-note>
+                <!-- <ion-text color="dark">{{serverInfo.ip}}</ion-text> -->
             </ion-col>
-        </ion-row>
-        <ion-row>
-            <ion-col size="12" class="text-center">
-                <ion-text color="dark">{{serverInfo.ip}}</ion-text>
-            </ion-col>
+
         </ion-row>
     </ion-grid>
     

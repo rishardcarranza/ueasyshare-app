@@ -4,7 +4,7 @@
 }
 
 ion-slides, ion-slide {
-    height: 50%;
+    height: 100%;
     width: 100%;
 }
 
@@ -12,7 +12,10 @@ ion-slide {
     height: 100%;
 }
 
-ion-list {
-    bottom: 2em;
-    position: fixed;
+ion-grid {
+    height: 100%;
+}
+
+ion-row.rowQR {
+    height: 75%;
 }
