@@ -5,24 +5,28 @@
     <ion-grid *ngIf="token === ''">
         <ion-row justify-content-center>
             <ion-col align-self-center size-md="6" size-lg="5" size-xs="12">
+                <br>
                 <div text-center>
-                    <h4>Iniciar Sesión</h4>
+                    <ion-text color="dark">
+                        <h1>Iniciar Sesión</h1>
+                    </ion-text>
                 </div>
-                <div padding>
+                <br>
+                <div>
                     <ion-item>
+                        <ion-label position="floating">Usuario</ion-label>
                         <ion-input  type="text" 
                                     name="username"
                                     clear-input="true"
-                                    [(ngModel)]="username"
-                                    placeholder="Nombre de usuario"></ion-input>
+                                    [(ngModel)]="username"></ion-input>
                     </ion-item>
     
                     <ion-item>
+                        <ion-label position="floating">Contraseña</ion-label>
                         <ion-input  type="password"
                                     name="password"
                                     clear-input="true"
-                                    [(ngModel)]="password"
-                                    placeholder="Contraseña"></ion-input>
+                                    [(ngModel)]="password"></ion-input>
                     </ion-item>
                 </div>
                 <div padding>

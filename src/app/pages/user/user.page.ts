@@ -29,47 +29,34 @@ export class UserPage implements OnInit {
     private notifications: NotificationsService
   ) {  }
 
-  ionViewWillEnter() {
-    // Check the LOCAL IP
-    this.localService.getStorage('SERVER_IP')
-    .then(ip => {
-        console.log('SERVER_IP', ip);
-        this.localIp = ip;
-        this.localIp = '192.168.1.4';
-        if (ip && this.localIp !== '') {
-        // this.connectToWS();
-            this.webSocket = WebsocketService.getInstance(WebsocketService.URL);
+    ionViewWillEnter() {
+        // if (WebsocketService.SOCKET_STATUS) {
+        //     this.setUserInfo(WebsocketService.SOCKET_STATUS);
+        // } else {
+        // Check the LOCAL IP
+        this.localService.getStorage('SERVER_IP')
+            .then(ip => {
+                console.log('user will enter SERVER_IP', ip);
+                this.localIp = ip;
+                if (ip && this.localIp !== '') {
+                // this.connectToWS();
+                    this.webSocket = WebsocketService.getInstance(`http://${this.localIp}:${environment.socket_port}`);
 
-            if (WebsocketService.SOCKET_STATUS) {
-                this.localService.getUserInfo()
-                .then((response) => {
-                    if (response.token && response.user) {
-                        this.userAuth = response.user;
-                        this.token = response.token;
-                        this.router.navigateByUrl('/tabs/user/detail');
-                    } else {
-                        this.username = '';
-                        this.password = '';
-                        this.token = '';
-                        this.router.navigateByUrl('/tabs/user');
-                    }
-                }).
-                catch((error) => {
-                    this.notifications.presentToast(`Error: ${error}`);
-                    // this.notifications.alertDisconnected();
-                    this.username = '';
-                    this.password = '';
-                    this.token = '';
-                });
-            } else {
-                // Lanzar Toast
-                this.notifications.alertDisconnected();
-            }
-        } else {
-            // Lanzar Toast
-            this.notifications.alertDisconnected();
-        }
-    });
+                    this.webSocket.socket.on('connect', () => {
+                        WebsocketService.SOCKET_STATUS = true;
+                    });
+                } else {
+                    // Lanzar Toast
+                    this.notifications.alertDisconnected();
+                }
+            })
+            .catch((error) => {
+                WebsocketService.SOCKET_STATUS = false;
+            })
+            .finally(() => {
+                this.setUserInfo(WebsocketService.SOCKET_STATUS);
+            });
+        // }
   }
 
   ngOnInit() { }
@@ -84,8 +71,9 @@ export class UserPage implements OnInit {
             this.token = resp['key'];
             this.localService.saveUser(this.userAuth, this.token)
             .then(() => {
-                this.webSocket.emitirUsuariosActivos();
-                this.router.navigateByUrl('/tabs/user/detail');
+                this.setUserInfo(WebsocketService.SOCKET_STATUS);
+                // this.webSocket.emitirUsuariosActivos();
+                // this.router.navigateByUrl('/tabs/user/detail');
             });
         })
         .catch((err) => {
@@ -97,6 +85,44 @@ export class UserPage implements OnInit {
                 this.localService.isAuthenticated = false;
             }
         });
+  }
+
+  setUserInfo(status: boolean) {
+    console.log('socket status user: ', status);
+    if (status) {
+        console.log(this.webSocket);
+        this.localService.getUserInfo()
+            .then((response) => {
+                if (response.token && response.user) {
+                    this.userAuth = response.user;
+                    this.token = response.token;
+                    this.router.navigateByUrl('/tabs/user/detail');
+                    this.webSocket.emit('configurar-usuario', this.userAuth, () => {});
+                } else {
+                    this.username = '';
+                    this.password = '';
+                    this.token = '';
+                    // this.router.navigateByUrl('/tabs/user');
+                    const data = {
+                        first_name: 'Desconocido',
+                        last_name: '',
+                        username: '',
+                        email: ''
+                    }
+                    this.webSocket.emit('configurar-usuario', data, () => {});
+                }
+            })
+            .catch((error) => {
+                this.notifications.presentToast(`Error: ${error}`);
+                // this.notifications.alertDisconnected();
+                this.username = '';
+                this.password = '';
+                this.token = '';
+            });
+    } else {
+        // Lanzar Toast
+        this.notifications.alertDisconnected();
+    }
   }
 
 }
