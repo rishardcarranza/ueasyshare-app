@@ -7,6 +7,8 @@ import { environment } from '../../../environments/environment';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { WebsocketService } from '../../services/websocket.service';
 import { LocalService } from '../../services/local.service';
+import { User } from '../../interfaces/interfaces';
+import { NotificationsService } from '../../services/notifications.service';
 
 
 @Component({
@@ -19,6 +21,9 @@ export class Tab1Page implements OnInit  {
     serverInfoActual: any;
     webSocket: WebsocketService;
     localIp: string;
+
+    userAuth: User;
+    token = '';
 
     swiperOpts = {
         allowSlidePrev: false,
@@ -34,31 +39,33 @@ export class Tab1Page implements OnInit  {
 
   constructor(
     private localService: LocalService,
-    private barcodeScanner: BarcodeScanner
+    private barcodeScanner: BarcodeScanner,
+    private notifications: NotificationsService
   ) { }
 
-  ngOnInit() {
-    // this.localIp = this.localService.getStorage('SERVER_IP');
+  ionViewWillEnter() {
     // Check the LOCAL IP
     this.localService.getStorage('SERVER_IP')
     .then(ip => {
         console.log('SERVER_IP', ip);
         this.localIp = ip;
-        this.localIp = '192.168.1.4';
-        // if (ip && this.localIp !== '') {
-        this.connectToWS();
-        // }
+        // this.localIp = '172.20.10.2';
+        if (ip && this.localIp !== '') {
+            this.connectToWS();
+        }
     });
   }
+
+  ngOnInit() {  }
 
 
     scanQRCode() {
         this.barcodeScanner.scan()
         .then(barcodeData => {
             console.log('Barcode data', barcodeData);
-
             if (barcodeData.format === 'QR_CODE' && !barcodeData.cancelled) {
                 this.localIp = barcodeData.text;
+                this.localService.setStorage('SERVER_IP', this.localIp);
                 this.connectToWS();
                 // this.changeServerInfo(WebsocketService.SOCKET_STATUS);
             }
@@ -68,11 +75,34 @@ export class Tab1Page implements OnInit  {
     }
 
     connectToWS() {
-        console.log(`Connecting to websocket: ${this.localIp}`);
         this.webSocket = WebsocketService.getInstance(`http://${this.localIp}:${environment.socket_port}`);
+        console.log(`Connecting to websocket: http://${this.localIp}:${environment.socket_port}`, WebsocketService.SOCKET_STATUS);
         this.webSocket.socket.on('connect', () => {
             WebsocketService.SOCKET_STATUS = true;
             this.changeServerInfo(WebsocketService.SOCKET_STATUS);
+            this.localService.getUserInfo()
+                .then((response) => {
+                    if (response.token && response.user) {
+                        this.userAuth = response.user;
+                        this.token = response.token;
+                        this.webSocket.emit('configurar-usuario', this.userAuth, () => {});
+                    } else {
+                        this.token = '';
+                        // this.router.navigateByUrl('/tabs/user');
+                        const data = {
+                            first_name: 'Desconocido',
+                            last_name: '',
+                            username: '',
+                            email: ''
+                        };
+                        this.webSocket.emit('configurar-usuario', data, () => {});
+                    }
+                })
+                .catch((error) => {
+                    this.notifications.presentToast(`Error: ${error}`);
+                    // this.notifications.alertDisconnected();
+                    this.token = '';
+                });
         });
 
         this.webSocket.socket.on('disconnect', (reason) => {
@@ -102,7 +132,6 @@ export class Tab1Page implements OnInit  {
         }
 
         this.webSocket.emitirUsuariosActivos();
-        this.localService.setStorage('SERVER_IP', this.localIp);
     }
 //   getServerInfo() {
 //     this.mainService.getServerInfo()

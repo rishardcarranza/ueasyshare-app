@@ -3,6 +3,7 @@ import { User } from '../../interfaces/interfaces';
 import { LocalService } from '../../services/local.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MainService } from '../../services/main.service';
+import { NotificationsService } from '../../services/notifications.service';
 
 @Component({
   selector: 'app-userdetail',
@@ -16,6 +17,7 @@ export class UserdetailPage implements OnInit {
   constructor(
     private mainService: MainService,
     private localService: LocalService,
+    private notificationService: NotificationsService,
     // private route: ActivatedRoute,
     private router: Router
     ) {
@@ -54,20 +56,30 @@ export class UserdetailPage implements OnInit {
   }
 
   logoutUser() {
+    console.log('token logout: ', this.token);
     this.mainService.logoutUser(this.token)
-    .then((resp) => {
-        this.localService.deleteUser();
-        this.localService.isAuthenticated = false;
-        this.router.navigateByUrl('/tabs/user');
-    })
-    .catch((err) => {
-        console.log(err.status);
-        if (err.status === 400) {
-            // this.localService.presentToast('Error al cerrar la sesión');
+        .then((resp) => {
+            console.log('logout: ', resp);
+            this.localService.deleteUser();
+            this.localService.isAuthenticated = false;
+            this.router.navigateByUrl('/tabs/user');
+        })
+        .catch((err) => {
+            console.log(err.status);
+            switch (err.status) {
+                case 400:
+                    this.notificationService.alertMessage('Error', '', 'Se ha presentado un error con el cierre de sesión.');
+                    break;
+                case 401:
+                    this.localService.deleteUser();
+                    this.localService.isAuthenticated = false;
+                    this.notificationService.alertMessage('Error', '', 'La sesión ha expirado, favor inicie sesión nuevamente.');
+                    this.router.navigateByUrl('/tabs/user');
+                    break;
+            }
             this.user = null;
             this.token = '';
             this.localService.isAuthenticated = false;
-        }
-    });
+        });
   }
 }

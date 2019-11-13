@@ -18,7 +18,6 @@ export class MainService {
         this.localService.getStorage('SERVER_IP')
         .then(ip => {
             this.localIp = ip;
-            this.localIp = '192.168.1.4';
             this.serverURL = `http://${this.localIp}:${environment.api_port}`;
         });
     }
