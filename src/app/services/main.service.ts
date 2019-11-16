@@ -48,4 +48,21 @@ export class MainService {
 
     return this.http.post(`${this.serverURL}/api/v1/rest-auth/logout/`, {}, httpOptions).toPromise();
   }
+
+  sendCommand(token: string, action: string, value: string) {
+    const params = {
+        action,
+        value
+    };
+
+    const httpOptions = {
+        headers: new HttpHeaders({
+            'Content-Type':  'application/json',
+            Authorization: `Token ${token}`
+        })
+    };
+
+    return this.http.post(`${this.serverURL}/api/v1/command/`, params, httpOptions).toPromise();
+  }
+
 }
