@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { MainService } from '../../services/main.service';
 import { LocalService } from '../../services/local.service';
 import { User } from '../../interfaces/interfaces';
+import { WebsocketService } from '../../services/websocket.service';
+import { NotificationsService } from '../../services/notifications.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-tab3',
@@ -13,6 +16,8 @@ export class Tab3Page implements OnInit {
 
     user: User;
     token = '';
+    webSocket: WebsocketService;
+    localIp = '';
 
     segmentValue = 'media';
     displayStatus = 'Encendida';
@@ -26,10 +31,36 @@ export class Tab3Page implements OnInit {
 
     constructor(
         private mainService: MainService,
-        private localService: LocalService) {}
+        private localService: LocalService,
+        private notifications: NotificationsService
+    ) {}
 
     ionViewWillEnter() {
-        this.loadUserInfo();
+        // Check the LOCAL IP
+        this.localService.getStorage('SERVER_IP')
+            .then(ip => {
+                console.log('user will enter SERVER_IP', ip);
+                this.localIp = ip;
+                if (ip && this.localIp !== '') {
+                    console.log('connected', (ip && this.localIp !== ''), ip, this.localIp);
+                // this.connectToWS();
+                    this.webSocket = WebsocketService.getInstance(`http://${this.localIp}:${environment.socket_port}`);
+
+                    this.webSocket.socket.on('connect', () => {
+                        WebsocketService.SOCKET_STATUS = true;
+                    });
+                } else {
+                    // Lanzar Toast
+                    this.notifications.alertDisconnected();
+                }
+            })
+            .catch((error) => {
+                WebsocketService.SOCKET_STATUS = false;
+            })
+            .finally(() => {
+                this.loadUserInfo();
+            });
+            // }
     }
 
     ngOnInit() {}
@@ -41,14 +72,26 @@ export class Tab3Page implements OnInit {
                 if (response.token && response.user) {
                     this.user = response.user;
                     this.token = response.token;
+
+                    this.webSocket.emit('configurar-usuario', this.user, () => {});
                 } else {
-                    this.user = null;
-                    this.token = '';
+                    // this.user.username = environment.default_user;
+                    this.token = environment.token;
+                    console.log('user load info', this.user, this.token);
+
+                    const data = {
+                        first_name: 'Desconocido',
+                        last_name: '',
+                        username: environment.default_user,
+                        email: ''
+                    };
+                    this.webSocket.emit('configurar-usuario', data, () => {});
                 }
 
             }).
             catch((error) => {
                 // this.localService.presentToast(`Error: ${error}`);
+                console.log(`Error: ${error}`);
                 this.user = null;
                 this.token = '';
             });
@@ -78,6 +121,11 @@ export class Tab3Page implements OnInit {
     onPlay() {
         console.log('click play');
         this.playStatus = true;
+
+        this.mainService.sendCommand(this.token, 'play', '')
+            .then((resp) => {
+                console.log(resp);
+            });
         setTimeout(() => {
             this.playStatus = false;
         }, 500);
@@ -86,6 +134,11 @@ export class Tab3Page implements OnInit {
     onPause() {
         console.log('click pause');
         this.pauseStatus = true;
+
+        this.mainService.sendCommand(this.token, 'pause', '')
+            .then((resp) => {
+                console.log(resp);
+            });
         setTimeout(() => {
             this.pauseStatus = false;
         }, 500);
@@ -94,6 +147,7 @@ export class Tab3Page implements OnInit {
     onPrev() {
         console.log('click prev' );
         this.prevStatus = true;
+
         setTimeout(() => {
             this.prevStatus = false;
         }, 500);
@@ -102,6 +156,11 @@ export class Tab3Page implements OnInit {
     onStop() {
         console.log('click stop');
         this.stopStatus = true;
+
+        this.mainService.sendCommand(this.token, 'stop', '')
+            .then((resp) => {
+                console.log(resp);
+            });
         setTimeout(() => {
             this.stopStatus = false;
         }, 500);
@@ -118,6 +177,11 @@ export class Tab3Page implements OnInit {
     onShutdown() {
         console.log('click shutdown');
         this.shutdownStatus = true;
+
+        this.mainService.sendCommand(this.token, 'poweroff', '')
+            .then((resp) => {
+                console.log(resp);
+            });
         setTimeout(() => {
             this.shutdownStatus = false;
         }, 2000);
@@ -126,6 +190,11 @@ export class Tab3Page implements OnInit {
     onRestart() {
         console.log('click restart');
         this.restartStatus = true;
+
+        this.mainService.sendCommand(this.token, 'reboot', '')
+            .then((resp) => {
+                console.log(resp);
+            });
         setTimeout(() => {
             this.restartStatus = false;
         }, 2000);

@@ -30,9 +30,6 @@ export class UserPage implements OnInit {
   ) {  }
 
     ionViewWillEnter() {
-        // if (WebsocketService.SOCKET_STATUS) {
-        //     this.setUserInfo(WebsocketService.SOCKET_STATUS);
-        // } else {
         // Check the LOCAL IP
         this.localService.getStorage('SERVER_IP')
             .then(ip => {
@@ -72,8 +69,6 @@ export class UserPage implements OnInit {
             this.localService.saveUser(this.userAuth, this.token)
             .then(() => {
                 this.setUserInfo(WebsocketService.SOCKET_STATUS);
-                // this.webSocket.emitirUsuariosActivos();
-                // this.router.navigateByUrl('/tabs/user/detail');
             });
         })
         .catch((err) => {
@@ -108,7 +103,7 @@ export class UserPage implements OnInit {
                         last_name: '',
                         username: '',
                         email: ''
-                    }
+                    };
                     this.webSocket.emit('configurar-usuario', data, () => {});
                 }
             })
