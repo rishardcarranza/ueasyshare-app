@@ -106,6 +106,12 @@ export class Tab3Page implements OnInit {
         // console.log(event.detail.checked);
         const checked = event.detail.checked;
         this.displayStatus = (checked) ? 'Encendida' : 'Apagada';
+
+        const value = (checked) ? '1' : '0';
+        this.mainService.sendCommand(this.token, 'display', value)
+            .then((resp) => {
+                console.log(resp);
+            });
     }
 
     changeRange(event) {
@@ -122,7 +128,7 @@ export class Tab3Page implements OnInit {
         console.log('click play');
         this.playStatus = true;
 
-        this.mainService.sendCommand(this.token, 'play', '')
+        this.mainService.sendCommand(this.token, 'open', '')
             .then((resp) => {
                 console.log(resp);
             });
@@ -160,6 +166,9 @@ export class Tab3Page implements OnInit {
         this.mainService.sendCommand(this.token, 'stop', '')
             .then((resp) => {
                 console.log(resp);
+            })
+            .catch((error) => {
+                console.log(error);
             });
         setTimeout(() => {
             this.stopStatus = false;

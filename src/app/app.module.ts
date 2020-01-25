@@ -20,6 +20,9 @@ import { UserGuard } from './guards/user-guard.service';
 
 // Native
 import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
+import { Camera } from '@ionic-native/camera/ngx';
+import { FileTransfer } from '@ionic-native/file-transfer/ngx';
+
 
 import { WebsocketService } from './services/websocket.service';
 
@@ -46,6 +49,8 @@ const config: SocketIoConfig = {
     SplashScreen,
     UserGuard,
     BarcodeScanner,
+    Camera,
+    FileTransfer,
     WebsocketService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],

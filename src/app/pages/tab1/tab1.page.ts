@@ -51,7 +51,7 @@ export class Tab1Page implements OnInit  {
         this.localIp = ip;
         // this.localIp = '172.20.10.2';
         if (ip && this.localIp !== '') {
-            this.connectToWS();
+            this.connectToWS(this.localIp, environment.socket_port);
         }
     });
   }
@@ -65,8 +65,8 @@ export class Tab1Page implements OnInit  {
             console.log('Barcode data', barcodeData);
             if (barcodeData.format === 'QR_CODE' && !barcodeData.cancelled) {
                 this.localIp = barcodeData.text;
-                this.localService.setStorage('SERVER_IP', this.localIp);
-                this.connectToWS();
+                // this.localService.setStorage('SERVER_IP', this.localIp);
+                this.connectToWS(this.localIp, environment.socket_port);
                 // this.changeServerInfo(WebsocketService.SOCKET_STATUS);
             }
         }).catch(err => {
@@ -74,9 +74,9 @@ export class Tab1Page implements OnInit  {
         });
     }
 
-    connectToWS() {
-        this.webSocket = WebsocketService.getInstance(`http://${this.localIp}:${environment.socket_port}`);
-        console.log(`Connecting to websocket: http://${this.localIp}:${environment.socket_port}`, WebsocketService.SOCKET_STATUS);
+    connectToWS(localIp: string, socketPort: string) {
+        this.webSocket = WebsocketService.getInstance(`http://${localIp}:${socketPort}`);
+        console.log(`Connecting to websocket: http://${localIp}:${socketPort}`, WebsocketService.SOCKET_STATUS);
         this.webSocket.socket.on('connect', () => {
             WebsocketService.SOCKET_STATUS = true;
             this.changeServerInfo(WebsocketService.SOCKET_STATUS);
@@ -124,6 +124,8 @@ export class Tab1Page implements OnInit  {
             this.serverInfo.color = 'success';
             this.serverInfo.text = 'Servidor Conectado';
             this.serverInfo.ip = `IP: ${WebsocketService.IP}`;
+
+            this.localService.setStorage('SERVER_IP', this.localIp);
         } else {
             this.serverInfo.icon = 'close-circle';
             this.serverInfo.color = 'danger';
@@ -132,6 +134,14 @@ export class Tab1Page implements OnInit  {
         }
 
         this.webSocket.emitirUsuariosActivos();
+    }
+
+    connectManually() {
+        this.notifications.alertConnect((data) => {
+            console.log('Connect from Tab1', data);
+            this.localIp = data.txtIP;
+            this.connectToWS(this.localIp, data.txtPort);
+        });
     }
 //   getServerInfo() {
 //     this.mainService.getServerInfo()

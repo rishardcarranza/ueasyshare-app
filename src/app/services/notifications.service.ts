@@ -59,4 +59,43 @@ export class NotificationsService {
         await alert.present();
     }
 
+    // tslint:disable-next-line: ban-types
+    async alertConnect(callback?: (data) => void) {
+        const alert = await this.alertCtrl.create({
+            header: 'Conectar Manualmente',
+            inputs: [
+            {
+                name: 'txtIP',
+                type: 'text',
+                id: 'txtIP',
+                placeholder: '192.168.1.10'
+            },
+            {
+                name: 'txtPort',
+                type: 'number',
+                min: 2,
+                max: 4,
+                id: 'txtPort',
+                placeholder: '5000'
+            }
+            ],
+            buttons: [
+            {
+                text: 'Cancelar',
+                role: 'cancel',
+                cssClass: 'secondary',
+                handler: () => {
+                    console.log('Confirm Cancel');
+                }
+            },
+            {
+                text: 'Conectar',
+                handler: callback
+            }
+            ]
+        });
+
+        await alert.present();
+    }
+
 }
