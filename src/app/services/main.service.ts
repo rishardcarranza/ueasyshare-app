@@ -69,9 +69,14 @@ export class MainService {
     return this.http.post(`${this.serverURL}/api/v1/command/`, params, httpOptions).toPromise();
   }
 
-  uploadImage(token: string, img: string) {
+  uploadFile(token: string, filePath: string) {
+    const splitPath = filePath.split('/');
+    const nameFile = splitPath[splitPath.length - 1];
+    console.log('Upload', nameFile);
+    // const fileName = filePath.split('/');
     const options: FileUploadOptions = {
         fileKey: 'file',
+        fileName: nameFile,
         headers: {
             Authorization: `Token ${token}`
         },
@@ -82,13 +87,13 @@ export class MainService {
     };
 
     const fileTransfer: FileTransferObject = this.fileTransfer.create();
-
-    fileTransfer.upload(img, `${this.serverURL}/api/v1/media-files/`, options)
+    console.log('Upload url', `${this.serverURL}/api/v1/media-files/`, filePath);
+    fileTransfer.upload(filePath, `${this.serverURL}/api/v1/media-files/`, options)
         .then(data => {
             console.log(data);
         })
         .catch(error => {
-            console.log(`Critical error: ${error}`);
+            console.log(`Critical error: ${JSON.stringify(error)}`);
         });
   }
 

@@ -22,6 +22,11 @@ import { UserGuard } from './guards/user-guard.service';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { Camera } from '@ionic-native/camera/ngx';
 import { FileTransfer } from '@ionic-native/file-transfer/ngx';
+import { FileChooser } from '@ionic-native/file-chooser/ngx';
+import { IOSFilePicker } from '@ionic-native/file-picker/ngx';
+import { FilePath } from '@ionic-native/file-path/ngx';
+
+
 
 
 import { WebsocketService } from './services/websocket.service';
@@ -51,6 +56,9 @@ const config: SocketIoConfig = {
     BarcodeScanner,
     Camera,
     FileTransfer,
+    FileChooser,
+    IOSFilePicker,
+    FilePath,
     WebsocketService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
