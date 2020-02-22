@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
-import { ToastController, AlertController } from '@ionic/angular';
+import { ToastController, AlertController, LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationsService {
+    loading: any;
 
     constructor(
         private toastCtrl: ToastController,
         private alertCtrl: AlertController,
-        private router: Router
+        private router: Router,
+        private loadingCtrl: LoadingController
         ) { }
 
     // Toast
@@ -25,7 +27,8 @@ export class NotificationsService {
     async alertDisconnected() {
         const alert = await this.alertCtrl.create({
             header: 'Servidor Desconectado',
-            message: 'Primero debes conectarte al servidor de <strong>uEasyShare</strong> escaneando el código QR en la opción Conectar.',
+            // tslint:disable-next-line: max-line-length
+            message: 'Primero debes conectarte al servidor de <strong>uEasyShare</strong> escaneando el código QR en la opción Conectar o Manualmente.',
             buttons: [
             // {
             //     text: 'Cancelar',
@@ -48,7 +51,7 @@ export class NotificationsService {
         await alert.present();
     }
 
-    async alertMessage(header: string, subHeader: string, message: string) {
+    async alertMessage(message: string, header?: string, subHeader?: string) {
         const alert = await this.alertCtrl.create({
             header,
             subHeader,
@@ -96,6 +99,14 @@ export class NotificationsService {
         });
 
         await alert.present();
+    }
+
+    async presentLoading(message: string) {
+        this.loading = await this.loadingCtrl.create({
+            message
+        //   duration: 2000
+        });
+        return this.loading;
     }
 
 }

@@ -9,7 +9,7 @@ import { environment } from 'src/environments/environment';
 import { FileChooser } from '@ionic-native/file-chooser/ngx';
 import { IOSFilePicker } from '@ionic-native/file-picker/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
-import { Platform } from '@ionic/angular';
+import { Platform, LoadingController } from '@ionic/angular';
 
 declare var window: any;
 
@@ -26,6 +26,7 @@ export class Tab2Page implements OnInit {
     webSocket: WebsocketService;
     localIp = '';
     pathFile = '';
+    loading: any;
 
     constructor(
         private camera: Camera,
@@ -35,12 +36,18 @@ export class Tab2Page implements OnInit {
         private fileChooser: FileChooser,
         private filePicker: IOSFilePicker,
         private filePath: FilePath,
+        private loadingCtrl: LoadingController,
         private platform: Platform
     ) {
 
     }
 
     ionViewWillEnter() {
+        // this.presentLoading('75% Cargando...');
+
+        // setTimeout(() => {
+        //     this.loading.dismiss();
+        // }, 1500);
         // console.log(this.platform.is('ios'));
         // Check the LOCAL IP
         this.localService.getStorage('SERVER_IP')
@@ -132,6 +139,27 @@ export class Tab2Page implements OnInit {
     openLibrary() {
         this.platform.ready()
         .then(() => {
+            const options: CameraOptions = {
+                quality: 50,
+                destinationType: this.camera.DestinationType.FILE_URI,
+                mediaType: this.camera.MediaType.ALLMEDIA,
+                sourceType: this.camera.PictureSourceType.PHOTOLIBRARY
+            };
+
+            this.camera.getPicture(options)
+                .then((imageData) => {
+                    this.mainService.uploadFile(this.token, imageData);
+                    // console.log(img);
+                }, (err) => {
+                    // Handle error
+                    console.log('Error ', err);
+            });
+        });
+    }
+
+    openFileSystem() {
+        this.platform.ready()
+        .then(() => {
             if (this.platform.is('android')) {
                 this.fileChooser.open()
                     .then(uri => {
@@ -146,73 +174,29 @@ export class Tab2Page implements OnInit {
                     })
                     .catch(e => console.log(e));
             } else if (this.platform.is('ios')) {
-                const options: CameraOptions = {
-                    // quality: 60,
-                    // destinationType: this.camera.DestinationType.FILE_URI,
-                    // encodingType: this.camera.EncodingType.JPEG,
-                    // mediaType: this.camera.MediaType.ALLMEDIA,
-                    // correctOrientation: true,
-                    quality: 50,
-                    destinationType: this.camera.DestinationType.FILE_URI,
-                    mediaType: this.camera.MediaType.ALLMEDIA,
-                    sourceType: this.camera.PictureSourceType.PHOTOLIBRARY
-                };
-
-                this.camera.getPicture(options)
-                .then((imageData) => {
-                    // imageData is either a base64 encoded string or a file URI
-                    // If it's base64 (DATA_URL):
-                    // let base64Image = 'data:image/jpeg;base64,' + imageData;
-                    console.log('Before upload', imageData);
-                    // const img = window.Ionic.WebWiew.convertFileSrc(imageData);
-
-                    this.mainService.uploadFile(this.token, imageData);
-                    // console.log(img);
-                }, (err) => {
-                    // Handle error
-                    console.log('Error ', err);
-                });
-                // this.filePicker.pickFile()
-                //     .then(uri => {
-                //         console.log('URI', uri);
-                //         this.filePath.resolveNativePath(uri)
-                //             .then(path => {
-                //                 console.log('PATH', path);
-                //                 this.pathFile = path;
-                //                 this.mainService.uploadFile(this.token, path);
-                //             })
-                //             .catch(e => console.log(e));
-                //     })
-                //     .catch(e => console.log(e));
+                this.filePicker.pickFile()
+                    .then(uri => {
+                        console.log('URI', uri);
+                        this.filePath.resolveNativePath(uri)
+                            .then(path => {
+                                console.log('PATH', path);
+                                this.pathFile = path;
+                                this.mainService.uploadFile(this.token, path);
+                            })
+                            .catch(e => console.log(e));
+                    })
+                    .catch(e => console.log(e));
             }
         });
+    }
 
-        // const options: CameraOptions = {
-        //     // quality: 60,
-        //     // destinationType: this.camera.DestinationType.FILE_URI,
-        //     // encodingType: this.camera.EncodingType.JPEG,
-        //     // mediaType: this.camera.MediaType.ALLMEDIA,
-        //     // correctOrientation: true,
-        //     quality: 50,
-        //     destinationType: this.camera.DestinationType.FILE_URI,
-        //     mediaType: this.camera.MediaType.VIDEO,
-        //     sourceType: this.camera.PictureSourceType.PHOTOLIBRARY
-        // };
-
-        // this.camera.getPicture(options)
-        // .then((imageData) => {
-        //     // imageData is either a base64 encoded string or a file URI
-        //     // If it's base64 (DATA_URL):
-        //     // let base64Image = 'data:image/jpeg;base64,' + imageData;
-        //     console.log('Before upload', imageData);
-        //     // const img = window.Ionic.WebWiew.convertFileSrc(imageData);
-
-        //     this.mainService.uploadFile(this.token, imageData);
-        //     // console.log(img);
-        // }, (err) => {
-        //     // Handle error
-        //     console.log('Error ', err);
-        // });
+    // Loading
+    async presentLoading(message: string) {
+        this.loading = await this.loadingCtrl.create({
+            message
+        //   duration: 2000
+        });
+        return this.loading.present();
     }
 
 }

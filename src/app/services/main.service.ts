@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LocalService } from './local.service';
 import { environment } from 'src/environments/environment';
 import { FileTransfer, FileUploadOptions, FileTransferObject } from '@ionic-native/file-transfer/ngx';
-
+import { Platform } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,8 @@ export class MainService {
     private http: HttpClient,
     private localService: LocalService,
     // tslint:disable-next-line: deprecation
-    private fileTransfer: FileTransfer
+    private fileTransfer: FileTransfer,
+    private platfom: Platform
     ) {
         this.localService.getStorage('SERVER_IP')
         .then(ip => {
@@ -54,6 +55,7 @@ export class MainService {
   }
 
   sendCommand(token: string, action: string, value: string) {
+    console.log('Token: ', token);
     const params = {
         action,
         value
@@ -72,6 +74,9 @@ export class MainService {
   uploadFile(token: string, filePath: string) {
     const splitPath = filePath.split('/');
     const nameFile = splitPath[splitPath.length - 1];
+    let loaded = 0;
+    let total = 0;
+
     console.log('Upload', nameFile);
     // const fileName = filePath.split('/');
     const options: FileUploadOptions = {
@@ -79,15 +84,17 @@ export class MainService {
         fileName: nameFile,
         headers: {
             Authorization: `Token ${token}`
+            // Connection: 'close'
         },
         params: {
-            server: 1,
-            user: 1
-        }
+            user: 1,
+            server: 1
+        },
+        chunkedMode: false // OJO !!! Para que funcione el envio de parametros en ANDROID
     };
 
     const fileTransfer: FileTransferObject = this.fileTransfer.create();
-    console.log('Upload url', `${this.serverURL}/api/v1/media-files/`, filePath);
+    console.log('Upload url', `${this.serverURL}/api/v1/media-files/`, filePath, options);
     fileTransfer.upload(filePath, `${this.serverURL}/api/v1/media-files/`, options)
         .then(data => {
             console.log(data);
@@ -95,6 +102,12 @@ export class MainService {
         .catch(error => {
             console.log(`Critical error: ${JSON.stringify(error)}`);
         });
+
+    fileTransfer.onProgress(listener => {
+        loaded = listener.loaded;
+        total = listener.total;
+        console.log(listener);
+    });
   }
 
 }

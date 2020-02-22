@@ -16,11 +16,15 @@
             <ion-col class="ion-align-self-center" size-md="6" size-lg="5" size-xs="12">
                 <ion-toolbar>
                     <ion-segment (ionChange)="segmentChanged($event)" color="primary" value="media">
-                        <ion-segment-button value="media" checked layout="icon-start">
+                        <ion-segment-button value="media" checked layout="icon-top">
                             <ion-icon name="play-circle" size="small"></ion-icon>
                             <ion-label>Multimedia</ion-label>
                         </ion-segment-button>
-                        <ion-segment-button value="power" checked layout="icon-start">
+                        <ion-segment-button value="presentation" layout="icon-top">
+                            <ion-icon name="albums" size="small"></ion-icon>
+                            <ion-label>Presentación</ion-label>
+                        </ion-segment-button>
+                        <ion-segment-button value="power" layout="icon-top">
                             <ion-icon name="power" size="small"></ion-icon>
                             <ion-label>Energía</ion-label>
                         </ion-segment-button>
@@ -37,49 +41,81 @@
         <ion-grid>
             <ion-row>
                 <ion-col size="12">
-                    <ion-range min="0" max="100" step="5" pin="true" value="85" (ionChange)="changeRange($event)" debounce="400" color="tertiary">
+                    <ion-range min="0" max="100" step="10" pin="true" value="100" (ionChange)="changeRange($event)" debounce="400" color="tertiary">
                         <ion-icon slot="start" name="volume-mute"></ion-icon>
                         <ion-icon size="large" slot="end" name="volume-high"></ion-icon>
                     </ion-range>
                 </ion-col>
             </ion-row>
         </ion-grid>
-        <ion-item-divider mode="ios"></ion-item-divider>
+        <!-- <ion-item-divider mode="ios"></ion-item-divider> -->
         <ion-item-divider mode="ios">
             <ion-label>Reproducción</ion-label>
         </ion-item-divider>
         <ion-grid>
             <ion-row>
-                <ion-col size="6" class="ion-no-padding">
-                    <ion-button expand="full" mode="ios" color="tertiary" (click)="onPlay()" [disabled]="playStatus">
+                <ion-col size="12" class="ion-no-padding">
+                    <ion-button expand="full" mode="ios" color="tertiary" size="large" (click)="onPlay()" [disabled]="playStatus">
                         <ion-spinner name="crescent" slot="start" *ngIf="playStatus == true" ></ion-spinner>
                         <ion-icon slot="icon-only" name="play" size="large" *ngIf="playStatus == false"></ion-icon>
                     </ion-button>
                 </ion-col>
+            </ion-row>
+            <ion-row>
                 <ion-col size="6" class="ion-no-padding">
                     <ion-button expand="full" mode="ios" color="tertiary" (click)="onPause()" [disabled]="pauseStatus">
                         <ion-spinner name="crescent" slot="start" *ngIf="pauseStatus == true" ></ion-spinner>
                         <ion-icon slot="icon-only" name="pause" size="large" *ngIf="pauseStatus == false"></ion-icon>
                     </ion-button>
                 </ion-col>
-            </ion-row>
-            <ion-row>
-                <ion-col size="4" class="ion-no-padding">
-                    <ion-button expand="full" mode="ios" color="tertiary" (click)="onPrev()" [disabled]="prevStatus">
-                        <ion-spinner name="crescent" slot="start" *ngIf="prevStatus == true" ></ion-spinner>
-                        <ion-icon slot="icon-only" name="skip-backward" size="large" *ngIf="prevStatus == false"></ion-icon>
-                    </ion-button>
-                </ion-col>
-                <ion-col size="4" class="ion-no-padding">
+                <ion-col size="6" class="ion-no-padding">
                     <ion-button expand="full" mode="ios" color="dark" (click)="onStop()" [disabled]="stopStatus">
                         <ion-spinner name="crescent" slot="start" *ngIf="stopStatus == true" ></ion-spinner>
                         <ion-icon slot="icon-only" name="square" size="large" *ngIf="stopStatus == false"></ion-icon>
                     </ion-button>
                 </ion-col>
-                <ion-col size="4" class="ion-no-padding">
-                    <ion-button expand="full" mode="ios" color="tertiary" (click)="onNext()" [disabled]="nextStatus">
+            </ion-row>
+        </ion-grid>
+        <!-- <ion-item-divider mode="ios"></ion-item-divider> -->
+        <ion-item-divider mode="ios">
+            <ion-label>Imagen</ion-label>
+        </ion-item-divider>
+        <ion-grid>
+            <ion-row>
+                <ion-col size="12" class="ion-no-padding">
+                    <ion-button expand="full" mode="ios" color="dark" size="large" (click)="onCloseImage()" [disabled]="imageClose">
+                        <ion-spinner name="crescent" slot="start" *ngIf="imageClose == true" ></ion-spinner>
+                        <ion-icon slot="start" name="image" size="large" *ngIf="imageClose == false"></ion-icon>
+                        Cerrar imagen 
+                    </ion-button>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+    </ion-list>
+
+    <ion-list *ngIf="segmentValue === 'presentation'">
+        <ion-item-divider mode="ios"></ion-item-divider>
+        <ion-grid>
+            <ion-row>
+                <ion-col size="6" class="ion-no-padding">
+                    <ion-button expand="full" mode="ios" color="tertiary" size="large" (click)="onPrev()" [disabled]="prevStatus">
+                        <ion-spinner name="crescent" slot="start" *ngIf="prevStatus == true" ></ion-spinner>
+                        <ion-icon slot="icon-only" name="arrow-back" size="large" *ngIf="prevStatus == false"></ion-icon>
+                    </ion-button>
+                </ion-col>
+                <ion-col size="6" class="ion-no-padding">
+                    <ion-button expand="full" mode="ios" color="tertiary" size="large" (click)="onNext()" [disabled]="nextStatus">
                         <ion-spinner name="crescent" slot="start" *ngIf="nextStatus == true" ></ion-spinner>
-                        <ion-icon slot="icon-only" name="skip-forward" size="large" *ngIf="nextStatus == false"></ion-icon>
+                        <ion-icon slot="icon-only" name="arrow-forward" size="large" *ngIf="nextStatus == false"></ion-icon>
+                    </ion-button>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col size="12" class="ion-no-padding">
+                    <ion-button expand="full" mode="ios" color="dark" size="large" (click)="onCloseP()" [disabled]="closePStatus">
+                        <ion-spinner name="crescent" slot="start" *ngIf="closePStatus == true" ></ion-spinner>
+                        <ion-icon slot="start" name="close" size="large" *ngIf="closePStatus == false"></ion-icon>
+                        Cerrar presentación
                     </ion-button>
                 </ion-col>
             </ion-row>

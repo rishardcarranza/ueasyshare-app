@@ -44,42 +44,61 @@ export class Tab1Page implements OnInit  {
   ) { }
 
   ionViewWillEnter() {
-    // Check the LOCAL IP
-    this.localService.getStorage('SERVER_IP')
-    .then(ip => {
-        console.log('SERVER_IP', ip);
-        this.localIp = ip;
-        // this.localIp = '172.20.10.2';
-        if (ip && this.localIp !== '') {
-            this.connectToWS(this.localIp, environment.socket_port);
-        }
-    });
+    // // Check the LOCAL IP
+    // this.localService.getStorage('SERVER_IP')
+    // .then(ip => {
+    //     console.log('SERVER_IP', ip);
+    //     this.localIp = ip;
+    //     // this.localIp = '172.20.10.2';
+    //     if (ip && this.localIp !== '') {
+    //         this.connectToWS(this.localIp, environment.socket_port);
+    //     }
+    // });
   }
 
-  ngOnInit() {  }
+  ngOnInit() {
+      // Check the LOCAL IP
+    // this.localService.getStorage('SERVER_IP')
+    // .then(ip => {
+    //     console.log('SERVER_IP', ip);
+    //     this.localIp = ip;
+    //     // this.localIp = '172.20.10.2';
+    //     if (ip && this.localIp !== '') {
+    //         this.connectToWS(this.localIp, environment.socket_port);
+    //     }
+    // });
+   }
 
 
     scanQRCode() {
         this.barcodeScanner.scan()
         .then(barcodeData => {
-            console.log('Barcode data', barcodeData);
+            console.log('QR code data', barcodeData);
             if (barcodeData.format === 'QR_CODE' && !barcodeData.cancelled) {
                 this.localIp = barcodeData.text;
+                this.localService.setStorage('SERVER_IP', this.localIp);
                 // this.localService.setStorage('SERVER_IP', this.localIp);
                 this.connectToWS(this.localIp, environment.socket_port);
                 // this.changeServerInfo(WebsocketService.SOCKET_STATUS);
             }
-        }).catch(err => {
+        })
+        .catch(err => {
             console.log('Error', err);
+        })
+        .finally(() => {
+            this.connectToWS(this.localIp, environment.socket_port);
         });
     }
 
     connectToWS(localIp: string, socketPort: string) {
+        // do {
         this.webSocket = WebsocketService.getInstance(`http://${localIp}:${socketPort}`);
+
         console.log(`Connecting to websocket: http://${localIp}:${socketPort}`, WebsocketService.SOCKET_STATUS);
+        // } while (!WebsocketService.SOCKET_STATUS);
+
         this.webSocket.socket.on('connect', () => {
             WebsocketService.SOCKET_STATUS = true;
-            this.changeServerInfo(WebsocketService.SOCKET_STATUS);
             this.localService.getUserInfo()
                 .then((response) => {
                     if (response.token && response.user) {
@@ -97,6 +116,7 @@ export class Tab1Page implements OnInit  {
                         };
                         this.webSocket.emit('configurar-usuario', data, () => {});
                     }
+                    this.changeServerInfo(WebsocketService.SOCKET_STATUS);
                 })
                 .catch((error) => {
                     this.notifications.presentToast(`Error: ${error}`);
@@ -111,8 +131,10 @@ export class Tab1Page implements OnInit  {
             // if (reason === 'io server disconnect') {
             //     this.webSocket.socket.connect();
             // }
+            // this.localService.removeStorage('SERVER_IP');
             this.changeServerInfo(WebsocketService.SOCKET_STATUS);
         });
+
         // this.webSocket.emitServerInfo();
         // console.log('listen server info: ', this.webSocket.getServerInfo());
     }
@@ -124,13 +146,15 @@ export class Tab1Page implements OnInit  {
             this.serverInfo.color = 'success';
             this.serverInfo.text = 'Servidor Conectado';
             this.serverInfo.ip = `IP: ${WebsocketService.IP}`;
-
-            this.localService.setStorage('SERVER_IP', this.localIp);
         } else {
             this.serverInfo.icon = 'close-circle';
             this.serverInfo.color = 'danger';
             this.serverInfo.text = 'Servidor Desconectado';
             this.serverInfo.ip = 'Escanea el código QR para conectar';
+
+            // tslint:disable-next-line: max-line-length
+            this.notifications.alertMessage(`No se pudo conectar al servidor ${this.localIp}:${environment.socket_port}. Intente de nuevo o conecte manualmente.`, 'Error al conectar al servidor');
+            // this.localService.removeStorage('SERVER_IP');
         }
 
         this.webSocket.emitirUsuariosActivos();

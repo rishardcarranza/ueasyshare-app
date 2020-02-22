@@ -3,6 +3,6 @@ export const environment = {
   api_port: '8000',
   socket_port: '5000',
   default_user: 'dashboard',
-  token: 'f33b11535449ab24608ca12b42c7e3ea43e8fd94',
+  token: 'a6ead2962f36af0a4524a9da1ebfd0d268564715',
   debug: false
 };

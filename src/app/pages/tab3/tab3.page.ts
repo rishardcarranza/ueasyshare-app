@@ -28,6 +28,10 @@ export class Tab3Page implements OnInit {
     prevStatus = false;
     stopStatus = false;
     nextStatus = false;
+    imageClose = false;
+    closePStatus = false;
+    slideLevelAux = 100;
+    realLevel = 400;
 
     constructor(
         private mainService: MainService,
@@ -115,10 +119,27 @@ export class Tab3Page implements OnInit {
     }
 
     changeRange(event) {
-        // console.log(event.detail.value);
-        const level = event.detail.value;
+        // tslint:disable-next-line: radix
+        const slideCurrentLevel = parseInt(event.detail.value);
+        const factor = 106;
+        const minValue = -10239;
+        const maxValue = 400;
 
-        this.mainService.sendCommand(this.token, 'volume', level)
+        console.log(slideCurrentLevel, factor, this.realLevel, this.slideLevelAux);
+
+        if (slideCurrentLevel > this.slideLevelAux) {
+            this.realLevel = minValue + (factor * (0 + slideCurrentLevel));
+            console.log('Current level mayor', this.realLevel);
+        } else if (slideCurrentLevel < this.slideLevelAux) {
+            this.realLevel = maxValue - (factor * (100 - slideCurrentLevel));
+            console.log('Current level menor', this.realLevel);
+        } else {
+            console.log('Current level cero', this.realLevel);
+        }
+        this.slideLevelAux = slideCurrentLevel;
+
+
+        this.mainService.sendCommand(this.token, 'volume', this.realLevel.toString())
             .then((resp) => {
                 console.log(resp);
             });
@@ -128,13 +149,13 @@ export class Tab3Page implements OnInit {
         console.log('click play');
         this.playStatus = true;
 
-        this.mainService.sendCommand(this.token, 'open', '')
+        this.mainService.sendCommand(this.token, 'play', '')
             .then((resp) => {
                 console.log(resp);
             });
         setTimeout(() => {
             this.playStatus = false;
-        }, 500);
+        }, 300);
     }
 
     onPause() {
@@ -147,16 +168,7 @@ export class Tab3Page implements OnInit {
             });
         setTimeout(() => {
             this.pauseStatus = false;
-        }, 500);
-    }
-
-    onPrev() {
-        console.log('click prev' );
-        this.prevStatus = true;
-
-        setTimeout(() => {
-            this.prevStatus = false;
-        }, 500);
+        }, 300);
     }
 
     onStop() {
@@ -172,15 +184,40 @@ export class Tab3Page implements OnInit {
             });
         setTimeout(() => {
             this.stopStatus = false;
-        }, 500);
+        }, 300);
     }
 
     onNext() {
-        console.log('click next');
         this.nextStatus = true;
+        this.mainService.sendCommand(this.token, 'next', '')
+            .then((resp) => {
+                console.log(resp);
+            });
         setTimeout(() => {
             this.nextStatus = false;
-        }, 500);
+        }, 300);
+    }
+
+    onPrev() {
+        this.prevStatus = true;
+        this.mainService.sendCommand(this.token, 'prev', '')
+            .then((resp) => {
+                console.log(resp);
+            });
+        setTimeout(() => {
+            this.prevStatus = false;
+        }, 300);
+    }
+
+    onCloseP() {
+        this.closePStatus = true;
+        this.mainService.sendCommand(this.token, 'close-presentation', '')
+            .then((resp) => {
+                console.log(resp);
+            });
+        setTimeout(() => {
+            this.closePStatus = false;
+        }, 300);
     }
 
     onShutdown() {
@@ -193,7 +230,7 @@ export class Tab3Page implements OnInit {
             });
         setTimeout(() => {
             this.shutdownStatus = false;
-        }, 2000);
+        }, 1000);
     }
 
     onRestart() {
@@ -206,7 +243,19 @@ export class Tab3Page implements OnInit {
             });
         setTimeout(() => {
             this.restartStatus = false;
-        }, 2000);
+        }, 1000);
+    }
+
+    onCloseImage() {
+        this.imageClose = true;
+
+        this.mainService.sendCommand(this.token, 'close-image', '')
+            .then((resp) => {
+                console.log(resp);
+            });
+        setTimeout(() => {
+            this.imageClose = false;
+        }, 1000);
     }
 
 }

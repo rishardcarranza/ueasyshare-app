@@ -24,7 +24,7 @@
             </ion-label>
         </ion-item>
 
-        <ion-item detail lines="full" button="true">
+        <ion-item detail lines="full" (click)="openFileSystem()" button="true">
             <ion-icon name="cloud-upload" size="large" slot="start" color="secondary"></ion-icon> 
             <ion-label>
                 Subir archivo
@@ -39,11 +39,11 @@
             </ion-label>
         </ion-item>
         <ion-item-divider mode="ios"></ion-item-divider>
-        <ion-item detail lines="full" button="false">
+        <!-- <ion-item detail lines="full" button="false">
             <ion-icon name="camera" size="large" slot="start" color="secondary"></ion-icon> 
             <ion-label>
                 {{pathFile}}
             </ion-label>
-        </ion-item>
+        </ion-item> -->
     </ion-list>
 </ion-content>
