@@ -17,14 +17,14 @@
         <ion-item-divider mode="ios">
             <ion-label>Opciones para compartir</ion-label>
         </ion-item-divider>
-        <ion-item detail (click)="openLibrary()" button="true">
+        <ion-item detail (click)="checkPlayingStatus(LIBRARY)" button="true">
                 <ion-icon name="images" size="large" slot="start" color="secondary"></ion-icon> 
             <ion-label>
                 Libreria multimedia
             </ion-label>
         </ion-item>
 
-        <ion-item detail lines="full" (click)="openFileSystem()" button="true">
+        <ion-item detail lines="full" (click)="checkPlayingStatus(FILE_SYSTEM)" button="true">
             <ion-icon name="cloud-upload" size="large" slot="start" color="secondary"></ion-icon> 
             <ion-label>
                 Subir archivo
@@ -32,7 +32,7 @@
         </ion-item>
         <!-- <ion-item-divider mode="ios"></ion-item-divider> -->
 
-        <ion-item detail lines="full" (click)="openCamera()" button="true">
+        <ion-item detail lines="full" (click)="checkPlayingStatus(CAMERA)" button="true">
             <ion-icon name="camera" size="large" slot="start" color="secondary"></ion-icon> 
             <ion-label>
                 Cámara

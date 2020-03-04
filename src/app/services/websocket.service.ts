@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
-// import { Socket } from 'ngx-socket-io';
 import * as io from 'socket.io-client';
-// import { Usuario } from '../models/usuario';
-// import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
+import { UserSocket } from '../interfaces/interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -17,20 +14,17 @@ export class WebsocketService {
     public static URL: string;
     public static IP: string;
 
-    public socket;
-
-//  public usuario: Usuario = null;
+    public socket: any;
+    public users: UserSocket[];
 
     constructor(urlVal?: string) {
-        if (environment.debug) {
-            console.log('WebSocket constructor: ', urlVal);
-        }
         WebsocketService.URL = urlVal;
         WebsocketService.IP = urlVal.substr(7);
         this.socket = io(WebsocketService.URL);
-        // this.checkStatus();
-        // this.cargarStorage();
-        // this.checkStatus();
+
+        if (environment.debug) {
+            console.log('WebSocket constructor: ', urlVal, this.socket.connected);
+        }
     }
 
     // Singleton
@@ -42,27 +36,9 @@ export class WebsocketService {
         }
     }
 
-//   checkStatus() {
-//     return new Promise((resolve, rejected) => {
-//         this.socket.on('connect', () => {
-//             WebsocketService.SOCKET_STATUS = true;
-//             // this.cargarStorage();
-//             if (environment.debug) {
-//                 console.log('on connect: ', WebsocketService.SOCKET_STATUS);
-//             }
-//         });
-
-//         this.socket.on('disconnect', () => {
-//             WebsocketService.SOCKET_STATUS = false;
-
-//             if (environment.debug) {
-//                 console.log('on disconnect: ', WebsocketService.SOCKET_STATUS);
-//             }
-//         });
-
-//         resolve(WebsocketService.SOCKET_STATUS);
-//     });
-//   }
+    public static destruct() {
+        this.instance = null;
+    }
 
   // tslint:disable-next-line: ban-types
   emit(evento: string, payload?: any, callback?: Function) {
@@ -94,53 +70,22 @@ export class WebsocketService {
     return payload;
   }
 
+  getUsuariosActivos() {
+    this.socket.on('usuarios-activos', (response) => {
+        // console.log('On usuarios activos', response);
+        this.users = response;
+    });
+
+    return this.users;
+  }
+
   emitirUsuariosActivos() {
-    console.log('Emitir obtener usuarios');
+    // console.log('Emitir obtener usuarios');
     return this.emit('obtener-usuarios');
   }
 
   emitirServerInfo() {
     // console.log('Emitir obtener usuarios');
-    return this.emit('obtener-usuarios');
+    // return this.emit('obtener-usuarios');
   }
-
-  // loginWS(nombre: string) {
-  //   return new Promise((resolve, reject) => {
-  //     this.emit('configurar-usuario', {nombre}, (resp) => {
-
-  //       this.usuario = new Usuario(nombre);
-  //       this.guardarStorage();
-
-  //       resolve();
-  //     });
-  //   });
-  // }
-
-  // logoutWS() {
-  //   this.usuario = null;
-  //   localStorage.removeItem('usuario');
-
-  //   const payload = {
-  //     nombre: 'sin-nombre'
-  //   };
-
-  //   this.emit('configurar-usuario', payload, () => {});
-
-  //   this.router.navigateByUrl('/');
-  // }
-
-  // getUsuario() {
-  //   return this.usuario;
-  // }
-
-  // guardarStorage() {
-  //   localStorage.setItem('usuario',  JSON.stringify(this.usuario));
-  // }
-
-  // cargarStorage() {
-  //   if (localStorage.getItem('usuario')) {
-  //     this.usuario = JSON.parse(localStorage.getItem('usuario'));
-  //     this.loginWS(this.usuario.nombre);
-  //   }
-  // }
 }

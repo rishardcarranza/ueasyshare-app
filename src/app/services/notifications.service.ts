@@ -30,14 +30,6 @@ export class NotificationsService {
             // tslint:disable-next-line: max-line-length
             message: 'Primero debes conectarte al servidor de <strong>uEasyShare</strong> escaneando el código QR en la opción Conectar o Manualmente.',
             buttons: [
-            // {
-            //     text: 'Cancelar',
-            //     role: 'cancel',
-            //     cssClass: '',
-            //     handler: (blah) => {
-            //         // console.log('Confirm Cancel: blah');
-            //     }
-            // },
                 {
                     text: 'Ir a Conectar',
                     cssClass: 'primary',
@@ -45,7 +37,8 @@ export class NotificationsService {
                         this.router.navigateByUrl('/tabs/tab1');
                     }
                 }
-            ]
+            ],
+            backdropDismiss: false
         });
 
         await alert.present();
@@ -101,12 +94,24 @@ export class NotificationsService {
         await alert.present();
     }
 
-    async presentLoading(message: string) {
-        this.loading = await this.loadingCtrl.create({
-            message
-        //   duration: 2000
+    async alertInterrupt(message: string, header?: string, callbackYes?: (data) => void, callbackNo?: (data) => void) {
+        const alert = await this.alertCtrl.create({
+            header,
+            message,
+            buttons: [
+            {
+                text: 'No',
+                role: 'cancel',
+                cssClass: 'secondary',
+                handler: callbackNo
+            },
+            {
+                text: 'Si',
+                handler: callbackYes
+            }
+            ]
         });
-        return this.loading;
-    }
 
+        await alert.present();
+    }
 }

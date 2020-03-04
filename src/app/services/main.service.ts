@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LocalService } from './local.service';
 import { environment } from 'src/environments/environment';
 import { FileTransfer, FileUploadOptions, FileTransferObject } from '@ionic-native/file-transfer/ngx';
-import { Platform } from '@ionic/angular';
+import { Platform, Events } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -12,13 +12,15 @@ export class MainService {
 
     localIp = '';
     serverURL = '';
+    percentage = 0;
 
   constructor(
     private http: HttpClient,
     private localService: LocalService,
     // tslint:disable-next-line: deprecation
     private fileTransfer: FileTransfer,
-    private platfom: Platform
+    private platfom: Platform,
+    private events: Events
     ) {
         this.localService.getStorage('SERVER_IP')
         .then(ip => {
@@ -71,7 +73,7 @@ export class MainService {
     return this.http.post(`${this.serverURL}/api/v1/command/`, params, httpOptions).toPromise();
   }
 
-  uploadFile(token: string, filePath: string) {
+  uploadFile(token: string, filePath: string, userId: number) {
     const splitPath = filePath.split('/');
     const nameFile = splitPath[splitPath.length - 1];
     let loaded = 0;
@@ -87,7 +89,7 @@ export class MainService {
             // Connection: 'close'
         },
         params: {
-            user: 1,
+            user: userId,
             server: 1
         },
         chunkedMode: false // OJO !!! Para que funcione el envio de parametros en ANDROID
@@ -95,19 +97,17 @@ export class MainService {
 
     const fileTransfer: FileTransferObject = this.fileTransfer.create();
     console.log('Upload url', `${this.serverURL}/api/v1/media-files/`, filePath, options);
-    fileTransfer.upload(filePath, `${this.serverURL}/api/v1/media-files/`, options)
-        .then(data => {
-            console.log(data);
-        })
-        .catch(error => {
-            console.log(`Critical error: ${JSON.stringify(error)}`);
-        });
 
-    fileTransfer.onProgress(listener => {
-        loaded = listener.loaded;
-        total = listener.total;
-        console.log(listener);
+    fileTransfer.onProgress(progress => {
+        loaded = progress.loaded;
+        total = progress.total;
+        this.percentage = Math.round(((loaded / total) * 100));
+        this.events.publish('progress:upload', this.percentage);
+        // console.log(loaded, total);
     });
+
+    return fileTransfer.upload(filePath, `${this.serverURL}/api/v1/media-files/`, options);
+
   }
 
 }

@@ -26,9 +26,6 @@ import { FileChooser } from '@ionic-native/file-chooser/ngx';
 import { IOSFilePicker } from '@ionic-native/file-picker/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
 
-
-
-
 import { WebsocketService } from './services/websocket.service';
 
 
@@ -55,6 +52,7 @@ const config: SocketIoConfig = {
     UserGuard,
     BarcodeScanner,
     Camera,
+    // tslint:disable-next-line: deprecation
     FileTransfer,
     FileChooser,
     IOSFilePicker,

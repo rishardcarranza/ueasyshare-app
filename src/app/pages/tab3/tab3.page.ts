@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MainService } from '../../services/main.service';
 import { LocalService } from '../../services/local.service';
-import { User } from '../../interfaces/interfaces';
+import { User, UserSocket } from '../../interfaces/interfaces';
 import { WebsocketService } from '../../services/websocket.service';
 import { NotificationsService } from '../../services/notifications.service';
 import { environment } from 'src/environments/environment';
@@ -32,6 +32,10 @@ export class Tab3Page implements OnInit {
     closePStatus = false;
     slideLevelAux = 100;
     realLevel = 400;
+    activated = true;
+    userPlaying = '';
+    isPlaying = false;
+    users: UserSocket[];
 
     constructor(
         private mainService: MainService,
@@ -39,20 +43,19 @@ export class Tab3Page implements OnInit {
         private notifications: NotificationsService
     ) {}
 
-    ionViewWillEnter() {
+    async ionViewWillEnter() {
         // Check the LOCAL IP
         this.localService.getStorage('SERVER_IP')
-            .then(ip => {
+            .then(async ip => {
                 console.log('user will enter SERVER_IP', ip);
                 this.localIp = ip;
                 if (ip && this.localIp !== '') {
                     console.log('connected', (ip && this.localIp !== ''), ip, this.localIp);
                 // this.connectToWS();
-                    this.webSocket = WebsocketService.getInstance(`http://${this.localIp}:${environment.socket_port}`);
-
-                    this.webSocket.socket.on('connect', () => {
-                        WebsocketService.SOCKET_STATUS = true;
-                    });
+                    this.webSocket = await WebsocketService.getInstance(`http://${this.localIp}:${environment.socket_port}`);
+                    // this.webSocket.socket.on('connect', () => {
+                    //     WebsocketService.SOCKET_STATUS = true;
+                    // });
                 } else {
                     // Lanzar Toast
                     this.notifications.alertDisconnected();
@@ -80,24 +83,34 @@ export class Tab3Page implements OnInit {
                     this.webSocket.emit('configurar-usuario', this.user, () => {});
                 } else {
                     // this.user.username = environment.default_user;
-                    this.token = environment.token;
-                    console.log('user load info', this.user, this.token);
-
                     const data = {
+                        id: 0,
+                        username: '',
+                        password: '',
                         first_name: 'Desconocido',
                         last_name: '',
-                        username: environment.default_user,
-                        email: ''
+                        email: '',
+                        is_active: true,
+                        date_joined: '',
+                        last_login: ''
                     };
+
+                    this.token = environment.token;
+                    this.user = data;
                     this.webSocket.emit('configurar-usuario', data, () => {});
                 }
 
             }).
             catch((error) => {
-                // this.localService.presentToast(`Error: ${error}`);
+                // this.notifications.presentToast(`Error: ${error}`);
                 console.log(`Error: ${error}`);
                 this.user = null;
                 this.token = '';
+            })
+            .finally(() => {
+                if (this.activated) {
+                    this.checkPlayingStatus();
+                }
             });
     }
 
@@ -116,6 +129,53 @@ export class Tab3Page implements OnInit {
             .then((resp) => {
                 console.log(resp);
             });
+    }
+
+    async checkPlayingStatus() {
+        let msg = '';
+        this.users = await this.webSocket.getUsuariosActivos();
+        if (this.users) {
+            for (const user of this.users) {
+                if (user.playing) {
+                    this.isPlaying = true;
+                    this.userPlaying = user.username;
+                    break;
+                } else {
+                    this.isPlaying = false;
+                }
+            }
+        }
+
+        console.log('Check playing status', this.isPlaying, this.userPlaying);
+
+        if (this.isPlaying && this.userPlaying === this.user.username) {
+            // Play
+            this.activated = true;
+            this.webSocket.emit('configurar-estado', this.user, () => {});
+        } else if (this.isPlaying && this.userPlaying !== this.user.username) {
+            // Usuario desconocido o usuario logueado
+            if (this.user.username === '') {
+                msg = `Un usuario Desconocido no puede interrumpir el control.`;
+                this.notifications.alertMessage(msg, 'Error al compartir');
+                this.activated = false;
+            } else {
+                msg = `El usuario <strong>${this.userPlaying}</strong> posee el control. <br>¿Desea interrumpir?`;
+                this.notifications.alertInterrupt(msg, 'Error al compartir',
+                () => {
+                    this.activated = true;
+                    this.webSocket.emit('configurar-estado', this.user, () => {
+                        this.checkPlayingStatus();
+                    });
+                },
+                () => {
+                    this.activated = false;
+                });
+            }
+        } else if (this.isPlaying === false) {
+            // Play
+            this.activated = true;
+            this.webSocket.emit('configurar-estado', this.user, () => {});
+        }
     }
 
     changeRange(event) {
@@ -222,28 +282,34 @@ export class Tab3Page implements OnInit {
 
     onShutdown() {
         console.log('click shutdown');
-        this.shutdownStatus = true;
-
-        this.mainService.sendCommand(this.token, 'poweroff', '')
-            .then((resp) => {
-                console.log(resp);
-            });
-        setTimeout(() => {
-            this.shutdownStatus = false;
-        }, 1000);
+        const msg = '¿Está seguro que desea <strong>Apagar</strong> el dispositivo uEasyShare Server?';
+        this.notifications.alertInterrupt(msg, 'uEasyShare',
+        () => { // Si desea Apagar
+            this.shutdownStatus = true;
+            this.mainService.sendCommand(this.token, 'poweroff', '')
+                .then((resp) => {
+                    console.log(resp);
+                });
+            setTimeout(() => {
+                this.shutdownStatus = false;
+            }, 700);
+        });
     }
 
     onRestart() {
         console.log('click restart');
-        this.restartStatus = true;
-
-        this.mainService.sendCommand(this.token, 'reboot', '')
-            .then((resp) => {
-                console.log(resp);
-            });
-        setTimeout(() => {
-            this.restartStatus = false;
-        }, 1000);
+        const msg = '¿Está seguro que desea <strong>Reiniciar</strong> el dispositivo uEasyShare Server?';
+        this.notifications.alertInterrupt(msg, 'uEasyShare',
+        () => { // Si desea Apagar
+            this.restartStatus = true;
+            this.mainService.sendCommand(this.token, 'reboot', '')
+                .then((resp) => {
+                    console.log(resp);
+                });
+            setTimeout(() => {
+                this.restartStatus = false;
+            }, 700);
+        });
     }
 
     onCloseImage() {

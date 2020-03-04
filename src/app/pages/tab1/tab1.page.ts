@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 // import { Socket } from 'ngx-socket-io';
 // import io from 'socket.io-client';
 // import { MainService } from '../../services/main.service';
@@ -9,6 +9,7 @@ import { WebsocketService } from '../../services/websocket.service';
 import { LocalService } from '../../services/local.service';
 import { User } from '../../interfaces/interfaces';
 import { NotificationsService } from '../../services/notifications.service';
+import { IonList, Events, LoadingController } from '@ionic/angular';
 
 
 @Component({
@@ -17,13 +18,17 @@ import { NotificationsService } from '../../services/notifications.service';
   styleUrls: ['tab1.page.scss']
 })
 export class Tab1Page implements OnInit  {
+    @ViewChild('listConnect', {static: true}) listConnect: IonList;
+
     title = 'Servidores';
     serverInfoActual: any;
     webSocket: WebsocketService;
     localIp: string;
+    socketStatus = false;
 
     userAuth: User;
     token = '';
+    loading: any;
 
     swiperOpts = {
         allowSlidePrev: false,
@@ -40,34 +45,25 @@ export class Tab1Page implements OnInit  {
   constructor(
     private localService: LocalService,
     private barcodeScanner: BarcodeScanner,
-    private notifications: NotificationsService
+    private notifications: NotificationsService,
+    private loadingCtrl: LoadingController
+    // private events: Events
   ) { }
 
   ionViewWillEnter() {
-    // // Check the LOCAL IP
-    // this.localService.getStorage('SERVER_IP')
-    // .then(ip => {
-    //     console.log('SERVER_IP', ip);
-    //     this.localIp = ip;
-    //     // this.localIp = '172.20.10.2';
-    //     if (ip && this.localIp !== '') {
-    //         this.connectToWS(this.localIp, environment.socket_port);
-    //     }
-    // });
+    // Check the LOCAL IP
+    this.localService.getStorage('SERVER_IP')
+        .then(ip => {
+            console.log('SERVER_IP', ip);
+            this.localIp = ip;
+            // this.localIp = '172.20.10.2';
+            if (ip && this.localIp !== '') {
+                this.connectToWS(this.localIp, environment.socket_port);
+            }
+        });
   }
 
-  ngOnInit() {
-      // Check the LOCAL IP
-    // this.localService.getStorage('SERVER_IP')
-    // .then(ip => {
-    //     console.log('SERVER_IP', ip);
-    //     this.localIp = ip;
-    //     // this.localIp = '172.20.10.2';
-    //     if (ip && this.localIp !== '') {
-    //         this.connectToWS(this.localIp, environment.socket_port);
-    //     }
-    // });
-   }
+  ngOnInit() {}
 
 
     scanQRCode() {
@@ -76,7 +72,6 @@ export class Tab1Page implements OnInit  {
             console.log('QR code data', barcodeData);
             if (barcodeData.format === 'QR_CODE' && !barcodeData.cancelled) {
                 this.localIp = barcodeData.text;
-                this.localService.setStorage('SERVER_IP', this.localIp);
                 // this.localService.setStorage('SERVER_IP', this.localIp);
                 this.connectToWS(this.localIp, environment.socket_port);
                 // this.changeServerInfo(WebsocketService.SOCKET_STATUS);
@@ -86,101 +81,99 @@ export class Tab1Page implements OnInit  {
             console.log('Error', err);
         })
         .finally(() => {
-            this.connectToWS(this.localIp, environment.socket_port);
+            // this.connectToWS(this.localIp, environment.socket_port);
         });
     }
 
-    connectToWS(localIp: string, socketPort: string) {
-        // do {
-        this.webSocket = WebsocketService.getInstance(`http://${localIp}:${socketPort}`);
+    async connectToWS(localIp: string, socketPort: string) {
+        this.loading = this.presentLoading('Conectando...');
+        this.webSocket = await WebsocketService.getInstance(`http://${localIp}:${socketPort}`);
+        console.log(`Connecting to websocket: http://${localIp}:${socketPort}`, this.webSocket.socket.connected);
 
-        console.log(`Connecting to websocket: http://${localIp}:${socketPort}`, WebsocketService.SOCKET_STATUS);
-        // } while (!WebsocketService.SOCKET_STATUS);
-
-        this.webSocket.socket.on('connect', () => {
+        await this.webSocket.socket.on('connect', () => {
             WebsocketService.SOCKET_STATUS = true;
-            this.localService.getUserInfo()
+            this.socketStatus = WebsocketService.SOCKET_STATUS;
+            this.localService.setStorage('SERVER_IP', localIp);
+
+            this.loadUserInfo();
+        });
+
+        await this.webSocket.socket.on('disconnect', () => {
+            WebsocketService.SOCKET_STATUS = false;
+            this.socketStatus = WebsocketService.SOCKET_STATUS;
+        });
+
+        setTimeout(() => {
+            if (!this.socketStatus) {
+                WebsocketService.destruct();
+                // tslint:disable-next-line: max-line-length
+                this.notifications.alertMessage(`No pudo establecer la conexión con el servidor <strong>${localIp}:${socketPort}</strong><br>Favor revisar.`);
+            }
+            this.loading.dismiss();
+        }, 500);
+    }
+
+    loadUserInfo() {
+        this.localService.getUserInfo()
                 .then((response) => {
                     if (response.token && response.user) {
                         this.userAuth = response.user;
                         this.token = response.token;
                         this.webSocket.emit('configurar-usuario', this.userAuth, () => {});
                     } else {
-                        this.token = '';
-                        // this.router.navigateByUrl('/tabs/user');
                         const data = {
+                            id: 0,
+                            username: '',
+                            password: '',
                             first_name: 'Desconocido',
                             last_name: '',
-                            username: '',
-                            email: ''
+                            email: '',
+                            is_active: true,
+                            date_joined: '',
+                            last_login: ''
                         };
+
+                        this.token = environment.token;
+                        this.userAuth = data;
                         this.webSocket.emit('configurar-usuario', data, () => {});
                     }
-                    this.changeServerInfo(WebsocketService.SOCKET_STATUS);
                 })
                 .catch((error) => {
                     this.notifications.presentToast(`Error: ${error}`);
-                    // this.notifications.alertDisconnected();
+                    console.log(`Error: ${error}`);
+                    this.userAuth = null;
                     this.token = '';
                 });
-        });
-
-        this.webSocket.socket.on('disconnect', (reason) => {
-            WebsocketService.SOCKET_STATUS = false;
-            console.log('reason: ', reason, WebsocketService.SOCKET_STATUS);
-            // if (reason === 'io server disconnect') {
-            //     this.webSocket.socket.connect();
-            // }
-            // this.localService.removeStorage('SERVER_IP');
-            this.changeServerInfo(WebsocketService.SOCKET_STATUS);
-        });
-
-        // this.webSocket.emitServerInfo();
-        // console.log('listen server info: ', this.webSocket.getServerInfo());
-    }
-
-    changeServerInfo(status: boolean) {
-        console.log('change server info', status);
-        if (status) {
-            this.serverInfo.icon = 'checkmark-circle';
-            this.serverInfo.color = 'success';
-            this.serverInfo.text = 'Servidor Conectado';
-            this.serverInfo.ip = `IP: ${WebsocketService.IP}`;
-        } else {
-            this.serverInfo.icon = 'close-circle';
-            this.serverInfo.color = 'danger';
-            this.serverInfo.text = 'Servidor Desconectado';
-            this.serverInfo.ip = 'Escanea el código QR para conectar';
-
-            // tslint:disable-next-line: max-line-length
-            this.notifications.alertMessage(`No se pudo conectar al servidor ${this.localIp}:${environment.socket_port}. Intente de nuevo o conecte manualmente.`, 'Error al conectar al servidor');
-            // this.localService.removeStorage('SERVER_IP');
-        }
-
-        this.webSocket.emitirUsuariosActivos();
     }
 
     connectManually() {
-        this.notifications.alertConnect((data) => {
-            console.log('Connect from Tab1', data);
-            this.localIp = data.txtIP;
-            this.connectToWS(this.localIp, data.txtPort);
-        });
+        if (!this.socketStatus) {
+            this.notifications.alertConnect((data) => {
+                console.log('Connect from Tab1', data);
+                this.localIp = data.txtIP;
+                this.connectToWS(this.localIp, data.txtPort);
+            });
+        } else {
+            // tslint:disable-next-line: max-line-length
+            this.notifications.alertMessage(`Conectado actualmente al servidor <strong>${this.localIp}:${environment.socket_port}</strong><br>Desconectar la conexión actual para cambiar a otra diferente.`);
+        }
     }
-//   getServerInfo() {
-//     this.mainService.getServerInfo()
-//         .subscribe((resp) => {
-//             this.serverInfo = resp;
-//             console.log(this.serverInfo);
-//         });
 
-//   }
+    disconnectSocket() {
+        console.log('Disconnect');
+        this.webSocket.socket.close();
+        this.localService.removeStorage('SERVER_IP');
+        // this.localService.deleteUser();
+        this.socketStatus = false;
+        WebsocketService.destruct();
+        this.listConnect.closeSlidingItems();
+    }
 
-//   setActual() {
-//     if (this.serverInfo) {
-//         this.serverInfoActual = this.serverInfo;
-//         this.serverInfo = null;
-//         this.mainService.emitirUsuariosActivos();
-//     }
-//   }
+    // Loading
+    async presentLoading(message: string) {
+        this.loading  = await this.loadingCtrl.create({
+            message
+        });
+        return this.loading.present();
+    }
 }

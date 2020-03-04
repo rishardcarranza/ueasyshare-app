@@ -29,7 +29,7 @@ export class AppComponent {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
-      this.options = this.localService.getMenuOptions();
+    //   this.options = this.localService.getMenuOptions();
     });
   }
 }

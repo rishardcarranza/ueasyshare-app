@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.ionic.richard" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.rishardcarranza.ueasyshare" version="1.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>uEasyShare</name>
     <description>uEasyShare app.</description>
-    <author email="hi@ionicframework.com" href="http://ionicframework.com/">Rich Team</author>
+    <author email="rishardcarranza@gmail.com" href="http://rishardcarranza.net/">Richard Technology Network</author>
     <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
